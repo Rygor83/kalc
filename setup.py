@@ -6,7 +6,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='kalc',
-    version='0.1',  # Версию нужно править и в __init__.py
+    version='0.2',  # Версию нужно править и в __init__.py
     license='MIT',
     description='Command Line Calculator',
 
@@ -17,7 +17,7 @@ setup(
     packages=find_packages(where='src'),
     package_dir={'': 'src'},
 
-    install_requires=['click'],
+    install_requires=['click', 'pyperclip', 'appdirs'],
 
     entry_points={
         'console_scripts': [

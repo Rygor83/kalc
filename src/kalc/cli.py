@@ -1,7 +1,6 @@
 #  ------------------------------------------
 #   Copyright (c) Rygor. 2021.
 #  ------------------------------------------
-
 import click
 import math
 import re
@@ -11,36 +10,39 @@ import kalc.config as config
 
 @click.command()
 @click.argument('expression')
-@click.option('-uf', '--userfriendly', 'userfriendly', help='Выводить с разделителями тысяч', is_flag=True,
+@click.option('-uf', '--userfriendly', 'userfriendly', help='User-friendly output. Separate thousands with a spaces',
+              is_flag=True, type=click.BOOL)
+@click.option('-c', '--copytoclipboard', 'copytoclipboard', help='Copy results into clipboard', is_flag=True,
               type=click.BOOL)
-@click.option('-b', '--copytoclipboard', 'copytoclipboard', help='Копировать ответ в буфер обмена', is_flag=True,
-              type=click.BOOL)
-@click.option('-r', '--rounddecimal', 'rounddecimal', help='Округлять десятичные знаки', type=click.INT)
+@click.option('-d', '--rounddecimal', 'rounddecimal', help='Round a result up to <rounddecimal> decimal',
+              type=click.INT)
 def kalc(expression, userfriendly=False, copytoclipboard=False, rounddecimal=0):
-    """ Вычисляет заданное выражение """
+    """ Evaluates the specified math expression """
+
     output = ""
 
     _config = config.Config().read()
 
+    expression = str(expression).lower()
+
+    # Preparing to display the entire expression and result
     if "=" in expression:
         output = expression
         expression = expression.replace('=', '')
 
-    # Замена некоторых операторов, которые есть в жизни, но в python они другие.
-    expression = expression.replace(':', '/')
-
-    # Правильное обращение к операторам модуля math ( не sqrt(), а math.sqrt() )
+    # Correct access to math module operators ( not sqrt(), but math.sqrt() )
     math_func = {item: f'math.{item}' for item in dir(math)}
     pattern = re.compile("|".join(math_func.keys()))
     expression = pattern.sub(lambda m: math_func[re.escape(m.group(0))], expression)
 
+    # Calculations
     result = eval(expression)
 
-    # Копирование в буфер обмена
+    # Copy to clipboard ?!
     if any([copytoclipboard, _config.copytoclipboard]):
         pyperclip.copy(result)
 
-    # Округления
+    # Rounding
     if rounddecimal:
         round_num = rounddecimal
     elif _config.decimalround:
@@ -48,13 +50,14 @@ def kalc(expression, userfriendly=False, copytoclipboard=False, rounddecimal=0):
     else:
         round_num = 2
 
-    # Дружеский вывод с разделением на тысячи
+    # User-friendly output. Separate thousands with a spaces
     replace_symbol = " " if any([userfriendly, _config.userfriendly]) else ""
-
     result = f"{{:,.{round_num}f}}".format(result).replace(",", replace_symbol)
 
+    # Output
     output = f"{output}{result}"
     click.echo(output)
 
-    if __name__ == '__main__':
-        kalc()
+
+if __name__ == '__main__':
+    kalc()

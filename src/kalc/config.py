@@ -2,8 +2,6 @@
 #   Copyright (c) Rygor. 2021.
 #  ------------------------------------------
 import click
-import ctypes
-# import os
 import errno
 from appdirs import *
 from collections import namedtuple
@@ -20,31 +18,31 @@ class Config(object):
 
     def read(self):
         """Return KalcConfig object after reading config file."""
-        parser = ConfigParser()
+        parser = ConfigParser(interpolation=None)
         if not self.exists():
             self.create()
-        else:
-            a = parser.read(self.config_path)
 
-            decimalround = parser.get('GENERAL', 'decimalround')
-            copytoclipboard = parser.getboolean('GENERAL', 'copytoclipboard')
-            userfriendly = parser.getboolean('GENERAL', 'userfriendly')
+        parser.read(self.config_path)
+        decimalround = parser.getint('GENERAL', 'decimalround')
+        copytoclipboard = parser.getboolean('GENERAL', 'copytoclipboard')
+        userfriendly = parser.getboolean('GENERAL', 'userfriendly')
 
-            return KalcConfig(decimalround, copytoclipboard, userfriendly)
+        return KalcConfig(decimalround, copytoclipboard, userfriendly)
 
     def create(self):
         parser = ConfigParser()
-        parser['GENERAL'] = {'decimalround': 'number, 2 , 3',
-                             'copytoclipboard': 'True or False',
-                             'userfriendly': 'True or False'}
+        parser['GENERAL'] = {'decimalround': "Round a result up to <decimalround> decimal. Values: integer 1,2,3.",
+                             'copytoclipboard': "Need to copy results into clipboard. Values: True/False",
+                             'userfriendly': "Need to separate thousands with a space. Values: True/False. Example: 1 000 000"}
 
         with open(self.config_path, 'w+') as configfile:
             parser.write(configfile)
 
-        click.echo('Путь: %s \n' % click.format_filename(self.config_path))
-        click.echo(click.style('INI файл создан'))
-        click.echo(click.style('!!! Заполните все требуемые параметры в файле !!! \n'))
+        click.echo('Path to ini file: %s \n' % click.format_filename(self.config_path))
+        click.echo(click.style('INI file is created'))
+        click.echo(click.style('!!! Fill in all the required parameters in the file !!! \n'))
         click.launch(self.config_path)
+        click.pause()
 
     def exists(self):
         if os.path.exists(self.config_path):

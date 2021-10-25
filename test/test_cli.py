@@ -93,3 +93,39 @@ def test_kalc_SyntaxError():
     runner = CliRunner()
     result = runner.invoke(cli.kalc, "2:2")
     assert result.output == "SyntaxError: 2:2. Check operators"
+
+
+def test_kalc_bool_eq():
+    runner = CliRunner()
+    result = runner.invoke(cli.kalc, "5==5")
+    assert result.output == "1.00"
+
+
+def test_kalc_bool_not_eq():
+    runner = CliRunner()
+    result = runner.invoke(cli.kalc, "5!=4")
+    assert result.output == "1.00"
+
+
+def test_kalc_bool_noq_more_eq():
+    runner = CliRunner()
+    result = runner.invoke(cli.kalc, "6>=5")
+    assert result.output == "1.00"
+
+
+def test_kalc_bool_noq_less_eq():
+    runner = CliRunner()
+    result = runner.invoke(cli.kalc, "4<=5")
+    assert result.output == "1.00"
+
+
+def test_kalc_bool_eq_expression():
+    runner = CliRunner()
+    result = runner.invoke(cli.kalc, "2+2==2*2")
+    assert result.output == "1.00"
+
+
+def test_kalc_bool_false_noq_more_eq():
+    runner = CliRunner()
+    result = runner.invoke(cli.kalc, "4>=5")
+    assert result.output == "0.00"

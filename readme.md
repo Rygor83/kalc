@@ -64,30 +64,37 @@ kalc "2 + 2 - 1"
 - kalc module considers parenthesis ( i.e. '(' and ')' )
 - kalc module knows the following operations:
 
-| Operations                                                                                               | Description                             | Examples                     |
-|:---------------------------------------------------------------------------------------------------------|:----------------------------------------|:-----------------------------|
-| **Basic operations**                                                                                     |                                         |                              |
-| +                                                                                                        | addition                                | kalc 2+2  -> result 4        |
-| -                                                                                                        | substraction                            | kalc 2-1  -> result 3        |
-| /                                                                                                        | division                                | kalc 4/2  -> result 2        |
-| *                                                                                                        | multiplication                          | kalc 3*3  -> result 9        |
-| **                                                                                                       | exponentiation                          | kalc 3**2 -> result 9        |
-| //                                                                                                       | floor division                          | kalc 6//4 -> result 1        |
-| %                                                                                                        | modulus                                 | kalc 6%4  -> result 2        |
-| **Functions**                                                                                            |                                         |                              |
-| sin                                                                                                      | sinus                                   | kalc sin(pi/2) -> result 1   |
-| cos                                                                                                      | cosine                                  | kalc cos(pi)   -> result -1  |
-| tan                                                                                                      | tangent                                 |                              |
-| exp                                                                                                      | exponent                                | kalc exp(2) -> result 7.39   |
-| log                                                                                                      | natural logarithm                       | kalc log(e) -> result 1      |
-| sqrt                                                                                                     | square root                             | kalc sqrt(121) -> result 121 |
-| trunc                                                                                                    | truncation                              | kalc trunc(7.35) -> result 7 |
-| Other functions from python [math](https://docs.python.org/3/library/math.html) module is available      |                                         |                              |
-|                                                                                                          |                                         |                              |
-| **Numeric literals**                                                                                     |                                         |                              |
-| pi                                                                                                       | The mathematical constant π = 3.141592… |                              |
-| e                                                                                                        | The mathematical constant e = 2.718281… |                              |
-| tau                                                                                                      | The mathematical constant τ = 6.283185… |                              |
+| Operations                                                                                          | Description                             | Examples                     |
+|:----------------------------------------------------------------------------------------------------|:----------------------------------------|:-----------------------------|
+| **Basic operations**                                                                                |                                         |                              |
+| +                                                                                                   | addition                                | kalc 2+2  -> result 4        |
+| -                                                                                                   | substraction                            | kalc 2-1  -> result 3        |
+| /                                                                                                   | division                                | kalc 4/2  -> result 2        |
+| *                                                                                                   | multiplication                          | kalc 3*3  -> result 9        |
+| **                                                                                                  | exponentiation                          | kalc 3**2 -> result 9        |
+| //                                                                                                  | floor division                          | kalc 6//4 -> result 1        |
+| %                                                                                                   | modulus                                 | kalc 6%4  -> result 2        |
+| **Functions**                                                                                       |                                         |                              |
+| sin                                                                                                 | sinus                                   | kalc sin(pi/2) -> result 1   |
+| cos                                                                                                 | cosine                                  | kalc cos(pi)   -> result -1  |
+| tan                                                                                                 | tangent                                 |                              |
+| exp                                                                                                 | exponent                                | kalc exp(2) -> result 7.39   |
+| log                                                                                                 | natural logarithm                       | kalc log(e) -> result 1      |
+| sqrt                                                                                                | square root                             | kalc sqrt(121) -> result 121 |
+| trunc                                                                                               | truncation                              | kalc trunc(7.35) -> result 7 |
+| Other functions from python [math](https://docs.python.org/3/library/math.html) module is available |                                         |                              |
+|                                                                                                     |                                         |                              |
+| **Numeric literals**                                                                                |                                         |                              |
+| pi                                                                                                  | The mathematical constant π = 3.141592… |                              |
+| e                                                                                                   | The mathematical constant e = 2.718281… |                              |
+| tau                                                                                                 | The mathematical constant τ = 6.283185… |                              |
+| **Comparison Operators** Works only with quotes. Answers: 1 for True, 0 for False                   |                                         |                              |
+| ==                                                                                                  | equal                                   | "2==2" -> result 1.00 (True) |
+| !=                                                                                                  | not equal                               | "2!=2" -> result 0.00 (False)|
+| >                                                                                                   | more                                    | "2>1" -> result 1.00 (True)  |
+| <                                                                                                   | less                                    | "2<2" -> result 0.00 (False) |
+| >=                                                                                                  | more or equal                           | "2>=2" -> result 1.00 (True) |
+| <=                                                                                                  | less or equal                           | "2<=2" -> result 1.00 (True) |
 
 ## Configuration
 The kalc module's default settings are stored in kalc_config.ini (path: c:\Users\\\<username>\AppData\Local\kalc\):

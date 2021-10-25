@@ -26,9 +26,10 @@ def kalc(expression, userfriendly=False, copytoclipboard=False, rounddecimal=0):
     expression = str(expression).lower()
 
     # Preparing to display the entire expression and result
-    if "=" in expression:
+    pattern = re.compile('(=$|="$)')
+    if re.search(pattern, expression):
         output = expression
-        expression = expression.replace('=', '')
+        expression = re.sub(pattern, '', expression)
 
     # Correct access to math module operators ( not sqrt(), but math.sqrt() )
     math_func = {item: f'math.{item}' for item in dir(math)}

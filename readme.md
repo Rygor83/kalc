@@ -1,6 +1,11 @@
 # Kalc
 
-Command line calculator. Allows making calculations of any complexity directly in the windows' console.
+[![Python 3.6](https://img.shields.io/badge/python-3.6-blue.svg)](https://www.python.org/downloads/release/python-360/) [![Windows](https://svgshare.com/i/ZhY.svg)](https://github.com/Rygor83/kalc) [![GitHub license](https://img.shields.io/github/license/Naereen/StrapDown.js.svg)](https://choosealicense.com/licenses/mit/)
+
+
+
+Windows Command line calculator. Allows making calculations of any complexity directly in the windows' console.  
+Might work on Linux, but have no possibility to test it.
 
 ## Installation
 
@@ -41,7 +46,7 @@ Text appearing in the console: 333333.33333
 Example: kalc 10**8 -uf <ENTER>
 Text appearing in the console: 100 000 000.00
 
-Example: kalc fsum([2,4,6,8,10,12] <ENTER>
+Example: kalc fsum([2,4,6,8,10,12]) <ENTER>
 Text appearing in the console: 42.00
 
 Example: kalc "3**2 + sin(pi/2) / exp(2)" <ENTER>
@@ -50,9 +55,9 @@ Text appearing in the console: 9.14
 
 Hints:
 - kalc module is not case-sensitive
-- blanks in expressions allowed oly with quotes:
+- blanks in expressions allowed only with quotes:
 ```
-- kalc "2 + 2 - 1"
+kalc "2 + 2 - 1"
 ```
 - the decimal part must be separated by dot (not comma)
 - expression must be written according to the common rules of writing math expression on a PC. For instance: x^2+sin(5*y)/exp(4*z)
@@ -77,7 +82,7 @@ Hints:
 | log                                                                                                      | natural logarithm                       | kalc log(e) -> result 1      |
 | sqrt                                                                                                     | square root                             | kalc sqrt(121) -> result 121 |
 | trunc                                                                                                    | truncation                              | kalc trunc(7.35) -> result 7 |
-| Other functions from python math module is available [math](https://docs.python.org/3/library/math.html) |                                         |                              |
+| Other functions from python [math](https://docs.python.org/3/library/math.html) module is available      |                                         |                              |
 |                                                                                                          |                                         |                              |
 | **Numeric literals**                                                                                     |                                         |                              |
 | pi                                                                                                       | The mathematical constant π = 3.141592… |                              |
@@ -85,7 +90,7 @@ Hints:
 | tau                                                                                                      | The mathematical constant τ = 6.283185… |                              |
 
 ## Configuration
-The kalc module's default settings are stored in kalc_config.ini (path: c:\Users\<username>\AppData\Local\kalc\):
+The kalc module's default settings are stored in kalc_config.ini (path: c:\Users\\\<username>\AppData\Local\kalc\):
 ```
 [General]
 decimalround     - Round a result up to <decimalround> decimal. Values: integer.

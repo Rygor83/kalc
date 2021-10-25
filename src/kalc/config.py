@@ -14,7 +14,7 @@ class Config(object):
 
     def __init__(self):
         self.ini_name = 'kalc_config.ini'
-        self.config_path = os.path.join(self.set_path(), self.ini_name)
+        self.config_path = os.path.join(self.set_path, self.ini_name)
 
     def read(self):
         """Return KalcConfig object after reading config file."""
@@ -31,9 +31,9 @@ class Config(object):
 
     def create(self):
         parser = ConfigParser()
-        parser['GENERAL'] = {'decimalround': "Round a result up to <decimalround> decimal. Values: integer 1,2,3.",
+        parser['GENERAL'] = {'decimalround': "Round a result up to <decimalround> decimal. Values: integer 1,2,3",
                              'copytoclipboard': "Need to copy results into clipboard. Values: True/False",
-                             'userfriendly': "Need to separate thousands with a space. Values: True/False. Example: 1 000 000"}
+                             'userfriendly': "Need to separate thousands with a space. Values: True/False"}
 
         with open(self.config_path, 'w+') as configfile:
             parser.write(configfile)
@@ -50,6 +50,7 @@ class Config(object):
         else:
             return False
 
+    @property
     def set_path(self):
         path = user_data_dir('kalc', appauthor=False)
         if not os.path.exists(path):

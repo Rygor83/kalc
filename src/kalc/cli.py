@@ -1,6 +1,7 @@
 #  ------------------------------------------
 #   Copyright (c) Rygor. 2021.
 #  ------------------------------------------
+import sys
 import click
 import math
 import re
@@ -36,7 +37,14 @@ def kalc(expression, userfriendly=False, copytoclipboard=False, rounddecimal=0):
     expression = pattern.sub(lambda m: math_func[re.escape(m.group(0))], expression)
 
     # Calculations
-    result = eval(expression)
+    try:
+        result = eval(expression)
+    except AttributeError as err:
+        click.echo(f"AttributeError: {err}", nl=False)
+        sys.exit()
+    except SyntaxError as err:
+        click.echo(f"SyntaxError: {err.args[1][3]}. Check operators", nl=False)
+        sys.exit()
 
     # Copy to clipboard ?!
     if any([copytoclipboard, _config.copytoclipboard]):
@@ -56,7 +64,7 @@ def kalc(expression, userfriendly=False, copytoclipboard=False, rounddecimal=0):
 
     # Output
     output = f"{output}{result}"
-    click.echo(output)
+    click.echo(output, nl=False)
 
 
 if __name__ == '__main__':

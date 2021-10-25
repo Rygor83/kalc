@@ -34,10 +34,9 @@ def test_kalc_1mln_divide_3_userfriendly_output():
     assert result.output == "333 333.33"
 
 
-@pytest.mark.skip
 def test_kalc_expression_with_spaces():
     runner = CliRunner()
-    result = runner.invoke(cli.kalc, "'3**2 + sin(pi/2) / exp(2)'")  # Почему-то пробелы обрабатываются
+    result = runner.invoke(cli.kalc, "\'3**2 + sin(pi/2) / exp(2)\'")
     assert result.output == "9.14"
 
 

@@ -1,11 +1,14 @@
 #  ------------------------------------------
 #   Copyright (c) Rygor. 2021.
 #  ------------------------------------------
-import click
+
+""" Evaluates the specified math expression """
+
 import math
 import re
+import click
 import pyperclip
-import kalc.config as config
+from kalc.config import Config
 
 
 @click.command()
@@ -21,7 +24,7 @@ def kalc(expression, userfriendly=False, copytoclipboard=False, rounddecimal=0):
 
     output = ""
 
-    _config = config.Config().read()
+    _config = Config().read()
 
     expression = str(expression).lower()
 
@@ -41,10 +44,10 @@ def kalc(expression, userfriendly=False, copytoclipboard=False, rounddecimal=0):
         result = eval(expression)
     except AttributeError as err:
         click.echo(f"AttributeError: {err}", nl=False)
-        raise SystemExit
+        raise SystemExit from err
     except SyntaxError as err:
         click.echo(f"SyntaxError: {err.args[1][3]}. Check operators", nl=False)
-        raise SystemExit
+        raise SystemExit from err
 
     # Copy to clipboard ?!
     if any([copytoclipboard, _config.copytoclipboard]):

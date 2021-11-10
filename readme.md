@@ -1,8 +1,6 @@
 # Kalc
 
-[![Python 3.6](https://img.shields.io/badge/python-3.6-blue.svg)](https://www.python.org/downloads/release/python-360/) [![Windows](https://svgshare.com/i/ZhY.svg)](https://github.com/Rygor83/kalc) [![GitHub license](https://img.shields.io/github/license/Naereen/StrapDown.js.svg)](https://choosealicense.com/licenses/mit/)
-
-
+[![Python 3.6+](https://upload.wikimedia.org/wikipedia/commons/8/8c/Blue_Python_3.6%2B_Shield_Badge.svg)](https://www.python.org/downloads/release/python-360/) [![Windows](https://svgshare.com/i/ZhY.svg)](https://github.com/Rygor83/kalc) [![GitHub license](https://img.shields.io/github/license/Naereen/StrapDown.js.svg)](https://choosealicense.com/licenses/mit/)
 
 Windows Command line calculator. Allows making calculations of any complexity directly in the windows' console.  
 Might work on Linux, but have no possibility to test it.

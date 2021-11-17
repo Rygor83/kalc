@@ -53,12 +53,14 @@ Text appearing in the console: 9.14
 
 Hints:
 - kalc module is not case-sensitive
-- blanks in expressions allowed only with quotes:
+- blanks in expressions are allowed only with quotes:
 ```
 kalc "2 + 2 - 1"
 ```
-- the decimal part must be separated by dot (not comma)
-- expression must be written according to the common rules of writing math expression on a PC. For instance: x^2+sin(5*y)/exp(4*z)
+
+- decimal part must be separated by dot (not comma)
+- expression must be written according to the common rules of writing math expression on a PC. For instance: x^2+sin(5*
+  y)/exp(4*z)
 - kalc module considers parenthesis ( i.e. '(' and ')' )
 - kalc module knows the following operations:
 
@@ -89,7 +91,7 @@ kalc "2 + 2 - 1"
 | **Comparison Operators** Works only with quotes. Answers: 1 for True, 0 for False                   |                                         |                              |
 | ==                                                                                                  | equal                                   | "2==2" -> result 1.00 (True) |
 | !=                                                                                                  | not equal                               | "2!=2" -> result 0.00 (False)|
-| >                                                                                                   | more                                    | "2>1" -> result 1.00 (True)  |
+| \>                                                                                                  | more                                    | "2>1" -> result 1.00 (True)  |
 | <                                                                                                   | less                                    | "2<2" -> result 0.00 (False) |
 | >=                                                                                                  | more or equal                           | "2>=2" -> result 1.00 (True) |
 | <=                                                                                                  | less or equal                           | "2<=2" -> result 1.00 (True) |

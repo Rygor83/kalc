@@ -36,7 +36,7 @@ def test_kalc_1mln_divide_3_userfriendly_output():
 
 def test_kalc_expression_with_spaces():
     runner = CliRunner()
-    result = runner.invoke(cli.kalc, "\'3**2 + sin(pi/2) / exp(2)\'")
+    result = runner.invoke(cli.kalc, "'3**2 + sin(pi/2) / exp(2)'")
     assert result.output == "9.14"
 
 

@@ -8,40 +8,62 @@ import math
 import re
 import click
 import pyperclip
-from kalc.config import Config
+from kalc.config import Config, KalcConfig
 
 
 @click.command()
-@click.argument('expression')
-@click.option('-uf', '--userfriendly', 'userfriendly', help='User-friendly output. Separate thousands with a spaces',
-              is_flag=True, type=click.BOOL)
-@click.option('-c', '--copytoclipboard', 'copytoclipboard', help='Copy results into clipboard', is_flag=True,
-              type=click.BOOL)
-@click.option('-d', '--rounddecimal', 'rounddecimal', help='Round a result up to <rounddecimal> decimal',
-              type=click.INT)
-def kalc(expression, userfriendly=False, copytoclipboard=False, rounddecimal=0):
-    """ Evaluates the specified math expression """
+@click.argument("expression")
+@click.option(
+    "-uf",
+    "--userfriendly",
+    "userfriendly",
+    help="User-friendly output. Separate thousands with a spaces",
+    is_flag=True,
+    type=click.BOOL,
+)
+@click.option(
+    "-c",
+    "--copytoclipboard",
+    "copytoclipboard",
+    help="Copy results into clipboard",
+    is_flag=True,
+    type=click.BOOL,
+)
+@click.option(
+    "-d",
+    "--rounddecimal",
+    "rounddecimal",
+    help="Round a result up to <rounddecimal> decimal",
+    type=click.INT,
+)
+def kalc(
+        expression: str,
+        userfriendly: bool = False,
+        copytoclipboard: bool = False,
+        rounddecimal: int = 0,
+) -> None:
+    """Evaluates the specified math expression"""
 
-    output = ""
+    output: str = ""
 
-    _config = Config().read()
+    _config: KalcConfig = Config().read()
 
-    expression = str(expression).lower()
+    expression = expression.lower()
 
     # Preparing to display the entire expression and result
     pattern = re.compile('(=$|="$)')
     if re.search(pattern, expression):
         output = expression
-        expression = re.sub(pattern, '', expression)
+        expression = re.sub(pattern, "", expression)
 
     # Correct access to math module operators ( not sqrt(), but math.sqrt() )
-    math_func = {item: f'math.{item}' for item in dir(math)}
+    math_func = {item: f"math.{item}" for item in dir(math)}
     pattern = re.compile("|".join(math_func.keys()))
     expression = pattern.sub(lambda m: math_func[re.escape(m.group(0))], expression)
 
     # Calculations
     try:
-        result = eval(expression)
+        result: str = eval(expression)
     except AttributeError as err:
         click.echo(f"AttributeError: {err}", nl=False)
         raise SystemExit from err
@@ -70,5 +92,5 @@ def kalc(expression, userfriendly=False, copytoclipboard=False, rounddecimal=0):
     click.echo(output, nl=False)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     kalc()

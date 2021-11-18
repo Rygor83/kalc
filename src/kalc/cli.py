@@ -93,7 +93,7 @@ def kalc(
 
     # Output
     output = f"{output}{result}"
-    click.echo(output, nl=False)
+    click.echo(output, nl=True)
 
 
 if __name__ == "__main__":

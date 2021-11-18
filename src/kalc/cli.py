@@ -37,10 +37,10 @@ from kalc.config import Config, KalcConfig
     type=click.INT,
 )
 def kalc(
-        expression: str,
-        userfriendly: bool = False,
-        copytoclipboard: bool = False,
-        rounddecimal: int = 0,
+    expression: str,
+    userfriendly: bool = False,
+    copytoclipboard: bool = False,
+    rounddecimal: int = 0,
 ) -> None:
     """
     Evaluates the specified math EXPRESSION
@@ -81,7 +81,7 @@ def kalc(
 
     # Rounding
     if rounddecimal is not None:
-    round_num = rounddecimal
+        round_num = rounddecimal
     elif _config.decimalround:
         round_num = _config.decimalround
     else:

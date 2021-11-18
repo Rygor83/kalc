@@ -11,6 +11,10 @@ import pyperclip
 from kalc.config import Config, KalcConfig
 
 
+# TODO: используя Yapsy (https://pypi.org/project/Yapsy/) реалзовать систему плагинов, чтобы можно было писать
+#  свои функции.
+
+
 @click.command()
 @click.argument("expression")
 @click.option(
@@ -37,10 +41,10 @@ from kalc.config import Config, KalcConfig
     type=click.INT,
 )
 def kalc(
-    expression: str,
-    userfriendly: bool = False,
-    copytoclipboard: bool = False,
-    rounddecimal: int = 0,
+        expression: str,
+        userfriendly: bool = False,
+        copytoclipboard: bool = False,
+        rounddecimal: int = 0,
 ) -> None:
     """
     Evaluates the specified math EXPRESSION
@@ -54,16 +58,16 @@ def kalc(
 
     expression = expression.lower()
 
-    # Preparing to display the entire expression and result
+    # Preparing to display the entire expression and result i.e. 2+2=4
     pattern = re.compile('(=$|="$)')
     if re.search(pattern, expression):
         output = expression
         expression = re.sub(pattern, "", expression)
 
-    # Correct access to math module operators ( not sqrt(), but math.sqrt() )
+    # Correct access to math module operators ( not sqrt(), but math.sqrt() ). Replace only on word boundaries
     math_func = {item: f"math.{item}" for item in dir(math)}
-    pattern = re.compile("|".join(math_func.keys()))
-    expression = pattern.sub(lambda m: math_func[re.escape(m.group(0))], expression)
+    for key, value in math_func.items():
+        expression = re.sub(rf"\b{key}\b", value, expression)
 
     # Calculations
     try:
@@ -73,6 +77,9 @@ def kalc(
         raise SystemExit from err
     except SyntaxError as err:
         click.echo(f"SyntaxError: {err.args[1][3]}. Check operators", nl=False)
+        raise SystemExit from err
+    except NameError as err:
+        click.echo(f"NameError: {err.args[0]}", nl=False)
         raise SystemExit from err
 
     # Copy to clipboard ?!

@@ -52,7 +52,7 @@ def test_kalc_1mln_divide_3_without_decimal():
     assert result.output == "333 333\n"
 
 
-def test_kalc_test_clipboard():
+def test_kalc_clipboard():
     runner = CliRunner()
     runner.invoke(cli.kalc, "2*2 -c")
     clipboard_result = pyperclip.paste()
@@ -77,6 +77,24 @@ def test_kalc_fsum_1_to_10():
     assert result.output == "55.00\n"
 
 
+def test_kalc_degrees_pi():
+    runner = CliRunner()
+    result = runner.invoke(cli.kalc, "degrees(pi)")
+    assert result.output == "180.00\n"
+
+
+def test_kalc_radians_180():
+    runner = CliRunner()
+    result = runner.invoke(cli.kalc, "radians(180) -d 10")
+    assert result.output == "3.1415926536\n"
+
+
+def test_kalc_pow_2_10():
+    runner = CliRunner()
+    result = runner.invoke(cli.kalc, "pow(2,10)")
+    assert result.output == "1 024.00\n"
+
+
 def test_kalc_floor_division_5_2():
     runner = CliRunner()
     result = runner.invoke(cli.kalc, "5//2")
@@ -92,7 +110,7 @@ def test_kalc_modulus_5_2():
 def test_kalc_AttributeError():
     runner = CliRunner()
     result = runner.invoke(cli.kalc, "sinc(pi/2)")
-    assert result.output == "AttributeError: module 'math' has no attribute 'sinc'"
+    assert result.output == "NameError: name 'sinc' is not defined"
 
 
 def test_kalc_SyntaxError():

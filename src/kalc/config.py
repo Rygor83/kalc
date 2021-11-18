@@ -42,11 +42,14 @@ class Config:
 
     def create(self) -> None:
         """Creating a configuration file"""
-        parser = ConfigParser()
+        parser = ConfigParser(allow_no_value=True)
         parser["GENERAL"] = {
-            "decimalround": "Round a result up to <decimalround> decimal. Values: integer 1,2,3",
-            "copytoclipboard": "Need to copy results into clipboard. Values: True/False",
-            "userfriendly": "Need to separate thousands with a space. Values: True/False",
+            "; DECIMALROUND - Round a result up to <decimalround> decimal. Values: integer 1,2,3": None,
+            "decimalround": "2",
+            "; COPYTOCLIPBOARD - Need to copy results into clipboard. Values: True/False": None,
+            "copytoclipboard": True,
+            "; USERFRIENDLY - Need to separate thousands with a space. Values: True/False": None,
+            "userfriendly": True,
         }
 
         with open(self.config_path, "w+", encoding="utf-8") as configfile:

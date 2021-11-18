@@ -42,7 +42,11 @@ def kalc(
         copytoclipboard: bool = False,
         rounddecimal: int = 0,
 ) -> None:
-    """Evaluates the specified math expression"""
+    """
+    Evaluates the specified math EXPRESSION
+
+    Usage: kalc <EXPRESSION>
+    """
 
     output: str = ""
 

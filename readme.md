@@ -1,9 +1,13 @@
 # Kalc
 
-[![Python 3.6+](https://upload.wikimedia.org/wikipedia/commons/8/8c/Blue_Python_3.6%2B_Shield_Badge.svg)](https://www.python.org/downloads/release/python-360/) [![Windows](https://svgshare.com/i/ZhY.svg)](https://github.com/Rygor83/kalc) [![GitHub license](https://img.shields.io/github/license/Naereen/StrapDown.js.svg)](https://choosealicense.com/licenses/mit/)
+[![Python 3.6+](https://upload.wikimedia.org/wikipedia/commons/8/8c/Blue_Python_3.6%2B_Shield_Badge.svg)](https://www.python.org/downloads/release/python-360/)
 
-Windows Command line calculator. Allows making calculations of any complexity directly in the windows' console.  
-Might work on Linux, but have no possibility to test it.
+[![Windows](https://svgshare.com/i/ZhY.svg)](https://github.com/Rygor83/kalc) [![Linux](https://svgshare.com/i/Zhy.svg)](https://svgshare.com/i/Zhy.svg)
+
+[![GitHub license](https://img.shields.io/github/license/Naereen/StrapDown.js.svg)](https://choosealicense.com/licenses/mit/)
+
+Windows/Linux Command line calculator. Allows making calculations of any complexity directly in the windows' console.  
+Linux: tested on Windows 10 with WSL Ubuntu and Pycharm.
 
 ## Installation
 
@@ -52,8 +56,9 @@ Text appearing in the console: 9.14
 ```
 
 Hints:
+
 - kalc module is not case-sensitive
-- blanks in expressions are allowed only with quotes:
+- blanks in expressions are allowed only with quotes ( " " ):
 ```
 kalc "2 + 2 - 1"
 ```
@@ -88,16 +93,22 @@ kalc "2 + 2 - 1"
 | pi                                                                                                  | The mathematical constant π = 3.141592… |                              |
 | e                                                                                                   | The mathematical constant e = 2.718281… |                              |
 | tau                                                                                                 | The mathematical constant τ = 6.283185… |                              |
-| **Comparison Operators** Works only with quotes. Answers: 1 for True, 0 for False                   |                                         |                              |
+| **Comparison
+Operators** Works only with quotes. Answers: 1 for True, 0 for False                   |                                         |                              |
 | ==                                                                                                  | equal                                   | "2==2" -> result 1.00 (True) |
 | !=                                                                                                  | not equal                               | "2!=2" -> result 0.00 (False)|
 | \>                                                                                                  | more                                    | "2>1" -> result 1.00 (True)  |
 | <                                                                                                   | less                                    | "2<2" -> result 0.00 (False) |
-| >=                                                                                                  | more or equal                           | "2>=2" -> result 1.00 (True) |
+| > =                                                                                                  | more or equal                           | "2>=2" -> result 1.00 (True) |
 | <=                                                                                                  | less or equal                           | "2<=2" -> result 1.00 (True) |
 
 ## Configuration
-The kalc module's default settings are stored in kalc_config.ini (path: c:\Users\\\<username>\AppData\Local\kalc\):
+
+The kalc's default settings are stored in kalc_config.ini:
+
+path for Windows: c:\Users\USERNAME\AppData\Local\kalc\
+path for Linux: /home/USERNAME/.local/share/kalc
+
 ```
 [General]
 decimalround     - Round a result up to <decimalround> decimal. Values: integer.
@@ -105,7 +116,7 @@ copytoclipboard  - Need to copy results into clipboard. Values: True/False
 userfriendly     - Need to separate thousands with a space. Values: True/False. Example: 1 000 000
 ```
 
-Command options (-uf, -d, -c) have priority over configuration parameters.
+Kalc's command options (-uf, -d, -c) have priority over configuration parameters.
 
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.

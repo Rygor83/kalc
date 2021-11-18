@@ -46,6 +46,12 @@ def test_kalc_10_exponentiation_8_round_to_5_decimal():
     assert result.output == "100 000 000.00000"
 
 
+def test_kalc_1mln_divide_3_without_decimal():
+    runner = CliRunner()
+    result = runner.invoke(cli.kalc, "1000000/3 -d 0 ")
+    assert result.output == "333 333"
+
+
 def test_kalc_test_clipboard():
     runner = CliRunner()
     runner.invoke(cli.kalc, "2*2 -c")

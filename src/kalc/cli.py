@@ -80,8 +80,8 @@ def kalc(
         pyperclip.copy(result)
 
     # Rounding
-    if rounddecimal:
-        round_num = rounddecimal
+    if rounddecimal is not None:
+    round_num = rounddecimal
     elif _config.decimalround:
         round_num = _config.decimalround
     else:

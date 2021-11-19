@@ -14,6 +14,16 @@ from kalc.config import Config, KalcConfig
 # TODO: используя Yapsy (https://pypi.org/project/Yapsy/) реалзовать систему плагинов, чтобы можно было писать
 #  свои функции.
 
+def open_config(ctx, param, value):
+    """
+    Open configuration file for editing
+    """
+    if not value or ctx.resilient_parsing:
+        return
+    cfg = Config()
+    cfg.open_config()
+    ctx.exit()
+
 
 @click.command()
 @click.argument("expression")
@@ -39,6 +49,14 @@ from kalc.config import Config, KalcConfig
     "rounddecimal",
     help="Round a result up to <rounddecimal> decimal",
     type=click.INT,
+)
+@click.option(
+    "-config",
+    is_flag=True,
+    help="Open config",
+    callback=open_config,
+    expose_value=False,
+    is_eager=True
 )
 def kalc(
         expression: str,
@@ -81,6 +99,9 @@ def kalc(
     except NameError as err:
         click.echo(f"NameError: {err.args[0]}", nl=False)
         raise SystemExit from err
+
+    # TODO: попробовать заменять 1 и 0 в логическх операциях сравнения. Например, kalc "pi != e" выдает 1.00
+    #   и вот вместо 1.00 возвращать True.
 
     # Copy to clipboard ?!
     if any([copytoclipboard, _config.copytoclipboard]):

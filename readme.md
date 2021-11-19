@@ -2,7 +2,7 @@
 
 [![Python 3.6+](https://upload.wikimedia.org/wikipedia/commons/8/8c/Blue_Python_3.6%2B_Shield_Badge.svg)](https://www.python.org/downloads/release/python-360/)
 
-[![Windows](https://svgshare.com/i/ZhY.svg)](https://github.com/Rygor83/kalc) [![Linux](https://svgshare.com/i/Zhy.svg)](https://svgshare.com/i/Zhy.svg)
+[![Windows](https://svgshare.com/i/ZhY.svg)](https://github.com/Rygor83/kalc) [![Linux](https://svgshare.com/i/Zhy.svg)](https://github.com/Rygor83/kalc)
 
 [![GitHub license](https://img.shields.io/github/license/Naereen/StrapDown.js.svg)](https://choosealicense.com/licenses/mit/)
 
@@ -29,6 +29,7 @@ Options:
   -uf, --userfriendly    FLAG     User-friendly output. Separate thousands with a spaces
   -c,  --copytoclipboard FLAG     Copy results into clipboard
   -d,  --rounddecimal    INTEGER  Round a result up to <rounddecimal> decimal
+  -config                FLAG     Open config
   --help                          Show this message and exit.
 ```
 
@@ -59,6 +60,7 @@ Hints:
 
 - kalc module is not case-sensitive
 - blanks in expressions are allowed only with quotes ( " " ):
+
 ```
 kalc "2 + 2 - 1"
 ```
@@ -71,15 +73,17 @@ kalc "2 + 2 - 1"
 
 | Operations                                                                                          | Description                             | Examples                     |
 |:----------------------------------------------------------------------------------------------------|:----------------------------------------|:-----------------------------|
-| **Basic operations**                                                                                |                                         |                              |
-| +                                                                                                   | addition                                | kalc 2+2  -> result 4        |
-| -                                                                                                   | substraction                            | kalc 2-1  -> result 3        |
-| /                                                                                                   | division                                | kalc 4/2  -> result 2        |
-| *                                                                                                   | multiplication                          | kalc 3*3  -> result 9        |
+| **Basic
+operations**                                                                                |                                         |                              |
+| +                                                                                                   | addition                                | kalc 2+2 -> result 4        |
+| -                                                                                                   | substraction                            | kalc 2-1 -> result 3        |
+| /                                                                                                   | division                                | kalc 4/2 -> result 2        |
+| *                                                                                                   | multiplication                          | kalc 3*3 -> result 9        |
 | **                                                                                                  | exponentiation                          | kalc 3**2 -> result 9        |
 | //                                                                                                  | floor division                          | kalc 6//4 -> result 1        |
-| %                                                                                                   | modulus                                 | kalc 6%4  -> result 2        |
-| **Functions**                                                                                       |                                         |                              |
+| %                                                                                                   | modulus                                 | kalc 6%4 -> result 2        |
+| **
+Functions**                                                                                       |                                         |                              |
 | sin                                                                                                 | sinus                                   | kalc sin(pi/2) -> result 1   |
 | cos                                                                                                 | cosine                                  | kalc cos(pi)   -> result -1  |
 | tan                                                                                                 | tangent                                 |                              |
@@ -89,7 +93,8 @@ kalc "2 + 2 - 1"
 | trunc                                                                                               | truncation                              | kalc trunc(7.35) -> result 7 |
 | Other functions from python [math](https://docs.python.org/3/library/math.html) module is available |                                         |                              |
 |                                                                                                     |                                         |                              |
-| **Numeric literals**                                                                                |                                         |                              |
+| **Numeric
+literals**                                                                                |                                         |                              |
 | pi                                                                                                  | The mathematical constant π = 3.141592… |                              |
 | e                                                                                                   | The mathematical constant e = 2.718281… |                              |
 | tau                                                                                                 | The mathematical constant τ = 6.283185… |                              |
@@ -106,9 +111,18 @@ Operators** Works only with quotes. Answers: 1 for True, 0 for False            
 
 The kalc's default settings are stored in kalc_config.ini:
 
-path for Windows: c:\Users\USERNAME\AppData\Local\kalc\
-path for Linux: /home/USERNAME/.local/share/kalc
+- Windows path: c:\Users\USERNAME\AppData\Local\kalc\
+- Linux path: /home/USERNAME/.local/share/kalc
 
+kalc's configuration file is created at the moment of first calculations.
+
+To open config file for editing purpose run:
+
+```
+kalc -config
+```
+
+Config parameters
 ```
 [General]
 decimalround     - Round a result up to <decimalround> decimal. Values: integer.
@@ -119,7 +133,9 @@ userfriendly     - Need to separate thousands with a space. Values: True/False. 
 Kalc's command options (-uf, -d, -c) have priority over configuration parameters.
 
 ## Contributing
+
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
 
 ## License
+
 [MIT](https://choosealicense.com/licenses/mit/)

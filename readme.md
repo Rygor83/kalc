@@ -6,7 +6,7 @@
 
 [![GitHub license](https://img.shields.io/github/license/Naereen/StrapDown.js.svg)](https://choosealicense.com/licenses/mit/)
 
-Windows/Linux Command line calculator. Allows making calculations of any complexity directly in the windows' console.  
+Windows/Linux Command line calculator. Allows making calculations of any complexity directly in the console.  
 Linux: tested on Windows 10 with WSL Ubuntu and Pycharm.
 
 ## Installation

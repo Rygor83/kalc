@@ -10,9 +10,20 @@ import click
 import pyperclip
 from kalc.config import Config, KalcConfig
 
-
 # TODO: используя Yapsy (https://pypi.org/project/Yapsy/) реалзовать систему плагинов, чтобы можно было писать
 #  свои функции.
+
+
+# TODO: Реализовать перевод чисел к питоновскому виду
+sign_trans = str.maketrans({'$': '', ' ': ''})
+dot_trans = str.maketrans({'.': '', ',': ''})
+
+
+def conv(num, sign_trans=sign_trans, dot_trans=dot_trans):
+    num = str(num).translate(sign_trans)
+    num = num[:-3].translate(dot_trans) + num[-3:]
+    return float(num.replace(',', '.'))
+
 
 def open_config(ctx, param, value):
     """

@@ -36,7 +36,10 @@ def open_config(ctx, param, value):
     ctx.exit()
 
 
-@click.command()
+CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
+
+
+@click.command(context_settings=CONTEXT_SETTINGS)
 @click.argument("expression")
 @click.option(
     "-uf",
@@ -76,8 +79,9 @@ def kalc(
         rounddecimal: int = 0,
 ) -> None:
     """
+    \b
     Evaluates the specified math EXPRESSION
-
+    \b
     Usage: kalc <EXPRESSION>
     """
 

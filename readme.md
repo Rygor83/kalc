@@ -65,7 +65,7 @@ Hints:
 kalc "2 + 2 - 1"
 ```
 
-- decimal part must be separated by dot (not comma)
+- decimal part right now can be in any format (11.984,01; 11,984.01; 11984,01; 11984.01)
 - expression must be written according to the common rules of writing math expression on a PC. For instance: x^2+sin(5*
   y)/exp(4*z)
 - kalc module considers parenthesis ( i.e. '(' and ')' )

@@ -10,19 +10,25 @@ import click
 import pyperclip
 from kalc.config import Config, KalcConfig
 
+
 # TODO: используя Yapsy (https://pypi.org/project/Yapsy/) реалзовать систему плагинов, чтобы можно было писать
 #  свои функции.
 
 
-# TODO: Реализовать перевод чисел к питоновскому виду
-sign_trans = str.maketrans({'$': '', ' ': ''})
-dot_trans = str.maketrans({'.': '', ',': ''})
+def python_float_formater(val):
+    """
+    Convert string with numbers (int, float) in different formats (11.984,01; 11,984.01; 11984,01; 11984.01) into
+    string with float in python format
 
-
-def conv(num, sign_trans=sign_trans, dot_trans=dot_trans):
-    num = str(num).translate(sign_trans)
-    num = num[:-3].translate(dot_trans) + num[-3:]
-    return float(num.replace(',', '.'))
+    :param val: String with numbers (int, float) in different formats
+    :return: String with float numbers in python formats
+    """
+    value = re.split(r"\.|,", val.strip())
+    if len(value) > 1:
+        newVal = str("".join(value[:-1]) + "." + value[-1])
+    else:
+        newVal = str("".join(value))
+    return newVal
 
 
 def open_config(ctx, param, value):
@@ -96,6 +102,9 @@ def kalc(
     if re.search(pattern, expression):
         output = expression
         expression = re.sub(pattern, "", expression)
+
+    # Convert all numbers to python float format
+    expression = re.sub(r"\w((\d+|[.,])+)\w", lambda m: python_float_formater(m.group(0)), expression)
 
     # Correct access to math module operators ( not sqrt(), but math.sqrt() ). Replace only on word boundaries
     math_func = {item: f"math.{item}" for item in dir(math)}

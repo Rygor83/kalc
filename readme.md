@@ -69,7 +69,8 @@ Hints:
 kalc "2 + 2 - 1"
 ```
 
-- by default decimal part must be separated by dot (not comma). But if you use option -ff then decimal part can be in any format (11.984,01; 11,984.01; 11984,01; 11984.01)
+- by default decimal part must be separated by dot (not comma). But if you use option -ff then decimal part can be in
+  any format (11.984,01; 11,984.01; 11984,01; 11984.01)
 - expression must be written according to the common rules of writing math expression on a PC. For instance: x^2+sin(5*
   y)/exp(4*z)
 - kalc module considers parenthesis ( i.e. '(' and ')' )
@@ -127,6 +128,7 @@ kalc -config
 ```
 
 Config parameters
+
 ```
 [General]
 decimalround     - Round a result up to <decimalround> decimal. Values: integer.
@@ -135,7 +137,7 @@ userfriendly     - Need to separate thousands with a space. Values: True/False. 
 free_format      - Can use free format of float ((11.984,01; 11,984.01; 11984,01; 11984.01)). Values: True/False
 ```
 
-Kalc's command options (-uf, -d, -c) have priority over configuration parameters.
+Kalc's command options (-uf, -d, -c, -ff) have priority over configuration parameters.
 
 ## Contributing
 

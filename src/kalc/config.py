@@ -18,6 +18,7 @@ class KalcConfig(NamedTuple):
     decimalround: int
     copytoclipboard: bool
     userfriendly: bool
+    free_format: bool
 
 
 class Config:
@@ -37,8 +38,9 @@ class Config:
         decimalround = parser.getint("GENERAL", "decimalround")
         copytoclipboard = parser.getboolean("GENERAL", "copytoclipboard")
         userfriendly = parser.getboolean("GENERAL", "userfriendly")
+        free_format = parser.getboolean("GENERAL", "free_format")
 
-        return KalcConfig(decimalround, copytoclipboard, userfriendly)
+        return KalcConfig(decimalround, copytoclipboard, userfriendly, free_format)
 
     def create(self) -> None:
         """Creating a configuration file"""
@@ -50,6 +52,8 @@ class Config:
             "copytoclipboard": True,
             "; USERFRIENDLY - Need to separate thousands with a space. Values: True/False": None,
             "userfriendly": True,
+            "; FREE FORMAT - Can use free format of float ((11.984,01; 11,984.01; 11984,01; 11984.01)). Values: True/False": None,
+            "free_format": False,
         }
 
         with open(self.config_path, "w+", encoding="utf-8") as configfile:

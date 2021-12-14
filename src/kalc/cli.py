@@ -47,43 +47,18 @@ CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 
 @click.command(context_settings=CONTEXT_SETTINGS)
 @click.argument("expression")
-@click.option(
-    "-uf",
-    "--userfriendly",
-    "userfriendly",
-    help="User-friendly output. Separate thousands with a spaces",
-    is_flag=True,
-    type=click.BOOL,
-)
-@click.option(
-    "-c",
-    "--copytoclipboard",
-    "copytoclipboard",
-    help="Copy results into clipboard",
-    is_flag=True,
-    type=click.BOOL,
-)
-@click.option(
-    "-d",
-    "--rounddecimal",
-    "rounddecimal",
-    help="Round a result up to <rounddecimal> decimal",
-    type=click.INT,
-)
-@click.option(
-    "-config",
-    is_flag=True,
-    help="Open config",
-    callback=open_config,
-    expose_value=False,
-    is_eager=True
-)
-def kalc(
-        expression: str,
-        userfriendly: bool = False,
-        copytoclipboard: bool = False,
-        rounddecimal: int = 0,
-) -> None:
+@click.option("-uf", "--userfriendly", "userfriendly", help="User-friendly output. Separate thousands with a spaces",
+              is_flag=True, type=click.BOOL)
+@click.option("-c", "--copytoclipboard", "copytoclipboard", help="Copy results into clipboard", is_flag=True,
+              type=click.BOOL)
+@click.option("-d", "--rounddecimal", "rounddecimal", help="Round a result up to <rounddecimal> decimal",
+              type=click.INT)
+@click.option("-config", is_flag=True, help="Open config", callback=open_config, expose_value=False, is_eager=True)
+@click.option("-ff", "--free_format", "free_format",
+              help="Enter float numbers in any format (11.984,01; 11,984.01; 11984,01; 11984.01)", is_flag=True,
+              default=False)
+def kalc(expression: str, userfriendly: bool = False, copytoclipboard: bool = False, rounddecimal: int = 0,
+         free_format: bool = False) -> None:
     """
     \b
     Evaluates the specified math EXPRESSION
@@ -104,7 +79,8 @@ def kalc(
         expression = re.sub(pattern, "", expression)
 
     # Convert all numbers to python float format
-    expression = re.sub(r"\w((\d+|[.,])+)\w", lambda m: python_float_formater(m.group(0)), expression)
+    if any([free_format, _config.free_format]):
+        expression = re.sub(r"\w((\d+|[.,])+)\w", lambda m: python_float_formater(m.group(0)), expression)
 
     # Correct access to math module operators ( not sqrt(), but math.sqrt() ). Replace only on word boundaries
     math_func = {item: f"math.{item}" for item in dir(math)}

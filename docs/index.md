@@ -21,10 +21,11 @@ Usage: kalc [OPTIONS] EXPRESSION
   EXPRESSION                      math expression
 
 Options:
-  -uf, --userfriendly    FLAG     User-friendly output. Separate thousands with a spaces
-  -c,  --copytoclipboard FLAG     Copy results into clipboard
+  -uf, --userfriendly             User-friendly output. Separate thousands with a spaces
+  -c,  --copytoclipboard          Copy results into clipboard
   -d,  --rounddecimal    INTEGER  Round a result up to <rounddecimal> decimal
-  -config                FLAG     Open config
+  -config                         Open config
+  -ff, --free_format              Enter float numbers in any format (11.984,01; 11,984.01; 11984,01; 11984.01)
   --help                          Show this message and exit.
 ```
 
@@ -49,6 +50,9 @@ Text appearing in the console: 42.00
 
 Example: kalc "3**2 + sin(pi/2) / exp(2)" <ENTER>
 Text appearing in the console: 9.14
+
+Example: kalc 12.435,84*20/120 -ff <ENTER>
+Text appearing in the console: 2 072.64
 ```
 
 Hints:
@@ -60,7 +64,7 @@ Hints:
 kalc "2 + 2 - 1"
 ```
 
-- decimal part right now can be in any format (11.984,01; 11,984.01; 11984,01; 11984.01)
+- by default decimal part must be separated by dot (not comma). But if you use option -ff then decimal part can be in any format (11.984,01; 11,984.01; 11984,01; 11984.01)
 - expression must be written according to the common rules of writing math expression on a PC. For instance: x^2+sin(5*
   y)/exp(4*z)
 - kalc module considers parenthesis ( i.e. '(' and ')' )
@@ -119,6 +123,7 @@ Config parameters
 decimalround     - Round a result up to <decimalround> decimal. Values: integer.
 copytoclipboard  - Need to copy results into clipboard. Values: True/False
 userfriendly     - Need to separate thousands with a space. Values: True/False. Example: 1 000 000
+free_format      - Can use free format of float ((11.984,01; 11,984.01; 11984,01; 11984.01)). Values: True/False
 ```
 
 Kalc's command options (-uf, -d, -c) have priority over configuration parameters.

@@ -168,3 +168,28 @@ def test_bitwise_not(runner):
 def test_bitwise_xor(runner):
     result = runner.invoke(cli.kalc, "'10 ^ 1'")
     assert result.output == '11.00\n'
+
+
+def test_decimal_part_free_fromat_01(runner):
+    result = runner.invoke(cli.kalc, "11.984,01*2 -ff")
+    assert result.output == '23 968.02\n'
+
+
+def test_decimal_part_free_fromat_02(runner):
+    result = runner.invoke(cli.kalc, "11,984.01*2 -ff")
+    assert result.output == '23 968.02\n'
+
+
+def test_decimal_part_free_fromat_03(runner):
+    result = runner.invoke(cli.kalc, "11984,01*2 -ff")
+    assert result.output == '23 968.02\n'
+
+
+def test_decimal_part_free_fromat_04(runner):
+    result = runner.invoke(cli.kalc, "11984.01*2 -ff")
+    assert result.output == '23 968.02\n'
+
+
+def test_decimal_part_free_fromat_05(runner):
+    result = runner.invoke(cli.kalc, "12.435,84*20/120 -ff")
+    assert result.output == '2 072.64\n'

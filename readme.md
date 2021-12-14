@@ -132,6 +132,7 @@ Config parameters
 decimalround     - Round a result up to <decimalround> decimal. Values: integer.
 copytoclipboard  - Need to copy results into clipboard. Values: True/False
 userfriendly     - Need to separate thousands with a space. Values: True/False. Example: 1 000 000
+free_format      - Can use free format of float ((11.984,01; 11,984.01; 11984,01; 11984.01)). Values: True/False
 ```
 
 Kalc's command options (-uf, -d, -c) have priority over configuration parameters.

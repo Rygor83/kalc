@@ -1,4 +1,4 @@
 click
 pyperclip
-appdirs
-pyperclip
+yapsy
+click_log

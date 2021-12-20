@@ -29,9 +29,14 @@ def test_kalc_55_minus_5_equal(runner):
     assert result.output == "55-5=50.00\n"
 
 
-def test_kalc_1mln_divide_3_userfriendly_output(runner):
-    result = runner.invoke(cli.kalc, "1000000/3 -uf")
+def test_kalc_1mln_divide_3_userfriendly_true_output(runner):
+    result = runner.invoke(cli.kalc, "1000000/3 -uf true")
     assert result.output == "333 333.33\n"
+
+
+def test_kalc_1mln_divide_3_userfriendly_false_output(runner):
+    result = runner.invoke(cli.kalc, "1000000/3 -uf false")
+    assert result.output == "333333.33\n"
 
 
 def test_kalc_expression_with_spaces(runner):
@@ -170,26 +175,31 @@ def test_bitwise_xor(runner):
     assert result.output == '11.00\n'
 
 
-def test_decimal_part_free_fromat_01(runner):
+def test_float_free_fromat_01(runner):
     result = runner.invoke(cli.kalc, "11.984,01*2 -ff")
     assert result.output == '23 968.02\n'
 
 
-def test_decimal_part_free_fromat_02(runner):
+def test_float_free_fromat_02(runner):
     result = runner.invoke(cli.kalc, "11,984.01*2 -ff")
     assert result.output == '23 968.02\n'
 
 
-def test_decimal_part_free_fromat_03(runner):
+def test_float_free_fromat_03(runner):
     result = runner.invoke(cli.kalc, "11984,01*2 -ff")
     assert result.output == '23 968.02\n'
 
 
-def test_decimal_part_free_fromat_04(runner):
+def test_float_free_fromat_04(runner):
     result = runner.invoke(cli.kalc, "11984.01*2 -ff")
     assert result.output == '23 968.02\n'
 
 
-def test_decimal_part_free_fromat_05(runner):
+def test_float_free_fromat_05(runner):
     result = runner.invoke(cli.kalc, "12.435,84*20/120 -ff")
     assert result.output == '2 072.64\n'
+
+
+def test_float_free_format_06(runner):
+    result = runner.invoke(cli.kalc, "'fsum([11.984,01, 11,984.01])' -ff")
+    assert result.output == '23 968.02\n'

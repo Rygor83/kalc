@@ -3,10 +3,11 @@
 #  ------------------------------------------
 
 from setuptools import setup, find_packages
+from kalc import __version__
 
 setup(
     name="kalc",
-    version="0.7",
+    version=__version__,
     license="MIT",
     description="Command Line Calculator",
     author="Rygor",
@@ -14,7 +15,7 @@ setup(
     url="https://rygor.by",
     packages=find_packages(where="src"),
     package_dir={"": "src"},
-    install_requires=["click", "pyperclip", "appdirs"],
+    install_requires=["click", "pyperclip", "yapsy", "click_log"],
     entry_points={
         "console_scripts": [
             "kalc = kalc.cli:kalc",

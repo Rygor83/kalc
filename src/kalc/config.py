@@ -9,6 +9,7 @@ from configparser import ConfigParser
 import pathlib
 from typing import Union, NamedTuple
 import click
+import shutil
 
 
 class KalcConfig(NamedTuple):
@@ -18,7 +19,6 @@ class KalcConfig(NamedTuple):
     copytoclipboard: bool
     userfriendly: bool
     free_format: bool
-    plugin_folder: str
 
 
 class Config:
@@ -26,7 +26,11 @@ class Config:
 
     def __init__(self, config_path: Union[str, pathlib.Path] = None):
         self.ini_name = "kalc_config.ini"
-        self.config_path = config_path if config_path else os.path.join(self.set_path, self.ini_name)
+        self.plugin_folder_name = "plugins"
+        self.config_path = os.path.join(config_path, self.ini_name) if config_path else os.path.join(self.set_path,
+                                                                                                     self.ini_name)
+        self.plugin_path = os.path.join(config_path, 'plugins') if config_path else os.path.join(self.set_path,
+                                                                                                 self.plugin_folder_name)
 
     def read(self) -> KalcConfig:
         """Return KalcConfig object after reading configuration file"""
@@ -39,9 +43,8 @@ class Config:
         copytoclipboard = parser.getboolean("GENERAL", "copytoclipboard")
         userfriendly = parser.getboolean("GENERAL", "userfriendly")
         free_format = parser.getboolean("GENERAL", "free_format")
-        plugin_folder = parser.get("GENERAL", "plugin_folder")
 
-        return KalcConfig(decimalplaces, copytoclipboard, userfriendly, free_format, plugin_folder)
+        return KalcConfig(decimalplaces, copytoclipboard, userfriendly, free_format)
 
     def create(self) -> None:
         """Creating a configuration file"""
@@ -58,20 +61,20 @@ class Config:
             "userfriendly": True,
             "; FREE FORMAT - Can use free format of float ((11.984,01; 11,984.01; 11984,01; 11984.01)). Values: True/False": None,
             "free_format": False,
-            "; PLUGIN_FOLDER - path to plugin folder": None,
-            "plugin_folder": os.path.join(folder, "plugins"),
         }
+
+        os.mkdir(self.plugin_path)
 
         with open(self.config_path, "w+", encoding="utf-8") as configfile:
             parser.write(configfile)
 
-        click.echo(f"Path to ini file: {click.format_filename(self.config_path)} \n")
-        click.echo(click.style("INI file is created"))
-        click.echo(
-            click.style("!!! Fill in all the required parameters in the file !!! \n")
-        )
-        click.launch(self.config_path)
-        click.pause()
+        # click.echo(f"Path to ini file: {click.format_filename(self.config_path)} \n")
+        # click.echo(click.style("INI file is created"))
+        # click.echo(
+        #     click.style("!!! Fill in all the required parameters in the file !!! \n")
+        # )
+        # click.launch(self.config_path)
+        # click.pause()
 
     def exists(self) -> bool:
         """Checking if config file exists"""
@@ -92,3 +95,11 @@ class Config:
     def open_config(self) -> None:
         """Open configuration file for editing"""
         click.launch(self.config_path)
+
+    def remove_config(self):
+        """ Remove encryption keys """
+        os.remove(self.config_path)
+
+    def remove_plugin_folder(self):
+        """ Remove encryption keys """
+        shutil.rmtree(self.plugin_path)

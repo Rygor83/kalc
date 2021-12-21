@@ -15,7 +15,8 @@ from yapsy.PluginManager import PluginManager
 from yapsy.AutoInstallPluginManager import AutoInstallPluginManager
 from yapsy.FilteredPluginManager import FilteredPluginManager
 from kalc.config import Config, KalcConfig
-from kalc import __version__
+from kalc import __version__, PLUGIN_EXTENSION
+from pathlib import Path
 
 
 def python_float_formater(val):
@@ -49,21 +50,19 @@ def plugins_install(ctx, param, value):
     """ Install plugins into plugins folder"""
     # TODO: Доделать инсталяцию плагинов
 
-    _config: KalcConfig = Config().read()
+    if not value or ctx.resilient_parsing:
+        return
 
-    if value:
-        plugin_folder = _config.plugin_folder if _config.plugin_folder else os.path.join(
-            click.get_app_dir('kalc', roaming=False), 'plugins')
-        autoinstall = AutoInstallPluginManager(plugin_install_dir=plugin_folder, decorated_manager=None,
-                                               categories_filter=None,
-                                               directories_list=None, plugin_info_ext='kalc')
-        folder, file = os.path.split(value)
-        result = autoinstall.install(directory=folder, plugin_info_filename=file)
-        if result:
-            print(f'Plugin "{file.upper()}" is installed into "{plugin_folder}" folder.')
-        else:
-            print(f'Failed to install "{file.upper()}".')
-        ctx.exit()
+    cfg = Config()
+
+    autoinstall = AutoInstallPluginManager(plugin_install_dir=cfg.plugin_path, plugin_info_ext=PLUGIN_EXTENSION)
+    folder, file = os.path.split(value)
+    result = autoinstall.install(directory=folder, plugin_info_filename=file)
+    if result:
+        print(f'Plugin "{file.upper()}" is installed into "{cfg.plugin_path}" folder.')
+    else:
+        print(f'Failed to install "{file.upper()}".')
+    ctx.exit()
 
 
 logger = logging.getLogger(__name__)
@@ -86,8 +85,9 @@ log_level = ['--log_level', '-l']
               default=False)
 @click.option("-config", is_flag=True, help="Open config", callback=open_config, expose_value=False, is_eager=True)
 @click.option("-install", "--plugin_install", help="Install plugins into plugins folder", callback=plugins_install,
-              expose_value=False, is_eager=True, metavar='<PATH TO *.KALC FILE>')
-@click.option('-path', '--config_path', 'config_path', help="Path to external sap_config.ini folder", type=click.Path())
+              expose_value=False, is_eager=True, metavar='<PATH TO *.KALC FILE>', type=click.Path())
+@click.option('-path', '--config_path', 'config_path', help="Path to external sap_config.ini folder",
+              type=click.Path(exists=True, dir_okay=True))
 @click.version_option(version=__version__)
 @click_log.simple_verbosity_option(logger, *log_level, default='ERROR')
 @click.pass_context
@@ -103,7 +103,8 @@ def kalc(ctx, expression: str, userfriendly: bool, copytoclipboard: bool = False
     output: str = ""
     plug_func: dict = {}
 
-    _config: KalcConfig = Config(config_path).read()
+    cfg = Config(config_path)
+    _config: KalcConfig = cfg.read()
 
     expression = expression.lower()
     logger.info(f"Initial expression: {expression}")
@@ -134,8 +135,9 @@ def kalc(ctx, expression: str, userfriendly: bool, copytoclipboard: bool = False
     manager = PluginManager()
     manager = FilteredPluginManager(manager)
     manager.isPluginOk = lambda x: x.description != ""  # Some day this may be helpfull, but not right now
-    manager.setPluginInfoExtension("kalc")
-    manager.setPluginPlaces([_config.plugin_folder])
+    manager.setPluginInfoExtension(PLUGIN_EXTENSION)
+    manager.setPluginPlaces([cfg.plugin_path, str(Path.cwd() / 'plugins')])
+    manager.setPluginPlaces([cfg.plugin_path, str(Path(__file__).resolve().parent / 'plugins')])
     manager.collectPlugins()
 
     rejected_plug = manager.getRejectedPlugins()
@@ -155,17 +157,18 @@ def kalc(ctx, expression: str, userfriendly: bool, copytoclipboard: bool = False
             expression = re.sub(rf"\b{key}\b", value, expression)
         logger.info(f"Plugins call normalization: {expression}")
 
-    # ------------------------------------------------------------------------------------
-    # Correct access to MATH module operators ( not sqrt(), but math.sqrt() ). Replace only on word boundaries
-    # ------------------------------------------------------------------------------------
-    math_func = {item: f"math.{item}" for item in dir(math)}
-    for key, value in math_func.items():
-        expression = re.sub(rf"\b{key}\b", value, expression)
-    logger.info(f"Math module call normalization: {expression}")
+        # ------------------------------------------------------------------------------------
+        # Correct access to MATH module operators ( not sqrt(), but math.sqrt() ). Replace only on word boundaries
+        # ------------------------------------------------------------------------------------
+        math_func = {item: f"math.{item}" for item in dir(math)}
+        for key, value in math_func.items():
+            expression = re.sub(rf"\b{key}\b", value, expression)
+        logger.info(f"Math module call normalization: {expression}")
 
     # ------------------------------------------------------------------------------------
     # Calculations
     # ------------------------------------------------------------------------------------
+
     try:
         result: str = eval(expression)
     except AttributeError as err:

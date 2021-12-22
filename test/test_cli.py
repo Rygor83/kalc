@@ -112,32 +112,32 @@ def test_kalc_syntaxError(runner):
 
 def test_kalc_bool_eq(runner):
     result = runner.invoke(cli.kalc, "5==5")
-    assert result.output == "1.00\n"
+    assert result.output == "True\n"
 
 
 def test_kalc_bool_not_eq(runner):
     result = runner.invoke(cli.kalc, "5!=4")
-    assert result.output == "1.00\n"
+    assert result.output == "True\n"
 
 
 def test_kalc_bool_noq_more_eq(runner):
     result = runner.invoke(cli.kalc, "6>=5")
-    assert result.output == "1.00\n"
+    assert result.output == "True\n"
 
 
 def test_kalc_bool_noq_less_eq(runner):
     result = runner.invoke(cli.kalc, "4<=5")
-    assert result.output == "1.00\n"
+    assert result.output == "True\n"
 
 
 def test_kalc_bool_eq_expression(runner):
     result = runner.invoke(cli.kalc, "2+2==2*2")
-    assert result.output == "1.00\n"
+    assert result.output == "True\n"
 
 
 def test_kalc_bool_false_noq_more_eq(runner):
     result = runner.invoke(cli.kalc, "4>=5")
-    assert result.output == "0.00\n"
+    assert result.output == "False\n"
 
 
 def test_kalc_factorial(runner):

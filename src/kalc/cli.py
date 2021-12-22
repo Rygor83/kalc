@@ -48,7 +48,7 @@ def open_config(ctx, param, value):
 
 def plugins_install(ctx, param, value):
     """ Install plugins into plugins folder"""
-    # TODO: Доделать инсталяцию плагинов
+    # TODO: Сделать проверку на уникальность функций
 
     if not value or ctx.resilient_parsing:
         return
@@ -168,7 +168,9 @@ def kalc(ctx, expression: str, userfriendly: bool, copytoclipboard: bool = False
     # ------------------------------------------------------------------------------------
     # Calculations
     # ------------------------------------------------------------------------------------
-
+    # https://nedbatchelder.com/blog/201206/eval_really_is_dangerous.html
+    # Use eval() instead of ast.literal_eval() if the input is trusted (which it is in your case).
+    # ------------------------------------------------------------------------------------
     try:
         result: str = eval(expression)
     except AttributeError as err:
@@ -180,9 +182,6 @@ def kalc(ctx, expression: str, userfriendly: bool, copytoclipboard: bool = False
     except NameError as err:
         click.echo(f"NameError: {err.args[0]}", nl=False)
         raise SystemExit from err
-
-    # TODO: попробовать заменять 1 и 0 в логическх операциях сравнения. Например, kalc "pi != e" выдает 1.00
-    #   и вот вместо 1.00 возвращать True.
 
     # ------------------------------------------------------------------------------------
     # Copy to clipboard ?!
@@ -215,6 +214,17 @@ def kalc(ctx, expression: str, userfriendly: bool, copytoclipboard: bool = False
     except OverflowError as err:
         click.echo(f"NameError: {err.args[0]}", nl=False)
         raise SystemExit from err
+
+    # ------------------------------------------------------------------------------------
+    # Substitute answer after comparison operators: True/False instead 1/0
+    # ------------------------------------------------------------------------------------
+    pattern = re.compile('\w(==|!=|>|<|>=|<=)\w')  # searching for comparison operators
+    if re.search(pattern, expression):
+        pattern = re.compile('^0(\.?)(0*)$')  # searching for 0, 0.0, 0.00, 0.000 etc result
+        if re.search(pattern, result):
+            result = 'False'
+        else:
+            result = 'True'
 
     # ------------------------------------------------------------------------------------
     # Output

@@ -103,7 +103,7 @@ kalc 11.984,01+11,984.01+11984,01+11984.01 -ff
 | pi                                                                                                  | The mathematical constant π = 3.141592… |                                 |
 | e                                                                                                   | The mathematical constant e = 2.718281… |                                 |
 | tau                                                                                                 | The mathematical constant τ = 6.283185… |                                 |
-| **Comparison  Operators** Works only with quotes. Answers: 1 for True, 0 for False                  |                                         |                                 |
+| **Comparison  Operators** Works only with quotes. Answers: True, False                              |                                         |                                 |
 | ==                                                                                                  | equal                                   | "2==2" -> result 1.00 (True)    |
 | !=                                                                                                  | not equal                               | "2!=2" -> result 0.00 (False)   |
 | \>                                                                                                  | more                                    | "2>1" -> result 1.00 (True)     |

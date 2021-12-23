@@ -1,6 +1,6 @@
 from yapsy.IPlugin import IPlugin   # obligatory import of IPlugin
 
-class PluginOne(IPlugin):           # define class that will contain functions (methods)
+class Example_plugin(IPlugin):           # define class that will contain functions (methods)
     """ Custom defined plugin with constants and functions """
     
     # Constants
@@ -9,7 +9,7 @@ class PluginOne(IPlugin):           # define class that will contain functions (
 	# Functions
     def percent(self, percent, base_amount, days_in_month: int = 30, days_in_year: int = 360):
         """
-        Calculate percnet amount with the following parameters
+        Returns maturity amount
 
         :param percent: Rate of interest, 12
         :param base_amount: Principal amount

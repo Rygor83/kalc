@@ -7,19 +7,33 @@
 import math
 import os.path
 import re
+import logging
+from pathlib import Path
 import click
 import click_log
 import pyperclip
-import logging
 from yapsy.PluginManager import PluginManager
 from yapsy.AutoInstallPluginManager import AutoInstallPluginManager
 from yapsy.FilteredPluginManager import FilteredPluginManager
+from yapsy.IPluginLocator import IPluginLocator
+from yapsy.PluginFileLocator import PluginFileLocator, PluginFileAnalyzerWithInfoFile
 from kalc.config import Config, KalcConfig
 from kalc import __version__, PLUGIN_EXTENSION
-from pathlib import Path
+from pprint import pformat
+from collections import namedtuple
+
+# Message color
+color_message = {'bg': 'black', 'fg': 'white'}
+color_success = {'bg': 'black', 'fg': 'green'}
+color_warning = {'bg': 'black', 'fg': 'yellow'}
+color_sensitive = {'bg': 'red', 'fg': 'white'}
+
+Plugin_ref = namedtuple('Plugin', ['plugin_function_reference', 'string_function_reference', 'plugin_name',
+                                   'plugin_class_reference'])
+Plugin_ref.__new__.__defaults__ = (None, None, None, None)
 
 
-def python_float_formater(val):
+def python_float_formater(val: str) -> str:
     """
     Convert string with numbers (int, float) in different formats (11.984,01; 11,984.01; 11984,01; 11984.01) into
     string with float in python format
@@ -27,12 +41,56 @@ def python_float_formater(val):
     :param val: String with numbers (int, float) in different formats
     :return: String with float numbers in python formats
     """
+
+    # TODO: check this examples - they are not correct. And write tests
+    #   @Rygor ❯ kalc 1.000.000.000.000.000.000*2 -ff
+    #   2 000 000 000 000 000.00
+    #   @Rygor ❯ kalc 1.000.000.000.000.000.000*2 -ff
+    #   2 000 000 000 000 000.00
+    #   @Rygor ❯ kalc 1.000.000.000.000.000,000*2 -ff
+    #   2 000 000 000 000 000.00
+    #   @Rygor ❯ kalc 1,000,000,000,000,000.000*2 -ff
+    #   2 000 000 000 000 000.00
+    #   @Rygor ❯ kalc 1.000.000.000.000.000,000*2 -ff
+    #   2 000 000 000 000 000.00
+    #   @Rygor ❯ kalc 1,000,000,000,000,000,000*2 -ff
+    #   2 000 000 000 000 000.00
     value = re.split(r"\.|,", val.strip())
     if len(value) > 1:
         newVal = str("".join(value[:-1]) + "." + value[-1])
     else:
         newVal = str("".join(value))
     return newVal
+
+
+def function_help(ctx, param, value):
+    """ Help on avaialable functions (math module and plugins)"""
+    if not value or ctx.resilient_parsing:
+        return
+
+    cfg = Config()
+    plugin_dirs = [str(Path(__file__).resolve().parent / 'plugins'), cfg.plugin_path]
+    plug_func = load_plugins(plugin_dirs, type='dict')
+
+    math_func = {item: f"math.{item}" for item in dir(math) if not item.startswith("__") and not item.endswith("__")}
+
+    if str(value).lower() == 'list':
+        click.echo(click.style('\nList of available functions', **color_success))
+        click.echo(click.style('1. Plugins:', **color_success))
+        click.echo(list(plug_func.keys()))
+        click.echo(click.style('2. Math module:', **color_success))
+        click.echo(list(math_func.keys()))
+    elif value in plug_func:
+        function_description = getattr(plug_func[value][0], '__doc__')
+        click.echo(function_description)
+    elif value in math_func:
+        math_function_reference = getattr(math, value)
+        function_description = getattr(math_function_reference, '__doc__')
+        click.echo(function_description)
+    else:
+        click.echo(f"Function {str(value).upper()} is not available")
+
+    ctx.exit()
 
 
 def open_config(ctx, param, value):
@@ -46,22 +104,100 @@ def open_config(ctx, param, value):
     ctx.exit()
 
 
+def open_user_folder(ctx, param, value):
+    if not value or ctx.resilient_parsing:
+        return
+    click.launch(click.get_app_dir('kalc', roaming=False))
+    ctx.exit()
+
+
+def load_plugins(plugins_dirs: list, type: str):
+    manager = PluginManager()
+    pluglocator = PluginFileLocator()
+    pluglocator.setPluginPlaces(plugins_dirs)
+    analyzer = PluginFileAnalyzerWithInfoFile("kalc", (PLUGIN_EXTENSION))
+    pluglocator.appendAnalyzer(analyzer)
+    manager.setPluginLocator(pluglocator)
+    manager.collectPlugins()
+
+    plugin_functions_as_dict = {}
+    plugin_functions_as_list = []
+
+    for plugin in manager.getAllPlugins():
+        for item in dir(plugin.plugin_object):
+            if not item.startswith("__") and not item.endswith("__") and 'activate' not in item:
+                if type == 'dict':
+                    plugin_function_reference = getattr(plugin.plugin_object, item)
+                    var_name = plugin.name.replace(" ", "_")
+                    plugin_functions_as_dict[item] = Plugin_ref(plugin_function_reference,
+                                                                f"{var_name}.plugin_object.{item}",
+                                                                var_name, plugin)
+                elif type == 'list':
+                    plugin_functions_as_list.append(item)
+                else:
+                    pass
+    plugin_functions = plugin_functions_as_dict if plugin_functions_as_dict else plugin_functions_as_list
+    return plugin_functions
+
+
 def plugins_install(ctx, param, value):
     """ Install plugins into plugins folder"""
-    # TODO: Сделать проверку на уникальность функций
 
     if not value or ctx.resilient_parsing:
         return
 
+    existing_plugin_functions = {}
     cfg = Config()
 
-    autoinstall = AutoInstallPluginManager(plugin_install_dir=cfg.plugin_path, plugin_info_ext=PLUGIN_EXTENSION)
-    folder, file = os.path.split(value)
-    result = autoinstall.install(directory=folder, plugin_info_filename=file)
-    if result:
-        print(f'Plugin "{file.upper()}" is installed into "{cfg.plugin_path}" folder.')
+    # Name conflict check
+    captured_names_confilct = []
+
+    plugin_dirs = [cfg.plugin_path, str(Path(__file__).resolve().parent / 'plugins')]
+    existing_plugin_functions = load_plugins(plugin_dirs, type='dict')  # Load existing plugins
+
+    logger.info(f"\nEXISING PLUGIN FUNCTIONS:")
+    logger.info(pformat(existing_plugin_functions))
+
+    math_functions = [item for item in dir(math) if not item.startswith("__") and not item.endswith("__")]
+    logger.info(f"\nMATH MODULE FUNCTIONS:")
+    logger.info(pformat(math_functions))
+
+    new_plugin_dir = [str(Path(value).resolve().parent)]
+    new_plug_func = load_plugins(new_plugin_dir, type='list')  # Load new plugins
+
+    logger.info(f"\nNEW PLUGIN FUNCTIONS:")
+    logger.info(pformat(new_plug_func))
+
+    for new_item in new_plug_func:
+        if new_item in existing_plugin_functions.keys():
+            captured_names_confilct.append(
+                (new_item, existing_plugin_functions[new_item].plugin_name,
+                 existing_plugin_functions[new_item].plugin_class_reference.path))
+
+    for new_item in new_plug_func:
+        if new_item in math_functions:
+            captured_names_confilct.append((new_item, 'MATH', ''))
+
+    if captured_names_confilct:
+        click.echo(
+            click.style(
+                f"\nFunction names conflict between new plugin and existing plugins/math module",
+                **color_sensitive))
+        for ind, item in enumerate(captured_names_confilct, start=1):
+            click.echo(
+                f"{ind}. Function name '{str(item[0]).upper()}' already exists in plugin/module '{item[1]}' \n  {item[2]}")
+        click.echo("\nPlease rename you functions")
+    # ---------------------------------------------------------------------------------------------------------------
     else:
-        print(f'Failed to install "{file.upper()}".')
+        # Installation
+        autoinstall = AutoInstallPluginManager(plugin_install_dir=cfg.plugin_path, plugin_info_ext=PLUGIN_EXTENSION)
+        folder, file = os.path.split(value)
+        result = autoinstall.install(directory=folder, plugin_info_filename=file)
+        if result:
+            print(f'Plugin is installed into "{cfg.plugin_path}" folder.')
+        else:
+            print(f'Failed to install "{file.upper()}".')
+
     ctx.exit()
 
 
@@ -78,14 +214,18 @@ log_level = ['--log_level', '-l']
               type=click.BOOL, default=None)
 @click.option("-c", "--copytoclipboard", "copytoclipboard", help="Copy results into clipboard", is_flag=True,
               type=click.BOOL)
-@click.option("-d", "--decimal", "decimalplaces", help="Round a result up to <rounddecimal>",
+@click.option("-d", "--decimal", "decimalplaces", help="Round a result up to <decimal> places",
               type=click.INT)
 @click.option("-ff", "--free_format", "free_format",
               help="Enter float numbers in any format (11.984,01; 11,984.01; 11984,01; 11984.01)", is_flag=True,
               default=False)
+@click.option("-function", help="Available functions help", callback=function_help, expose_value=False,
+              is_eager=True, metavar="LIST / FUNCTION NAME")
 @click.option("-config", is_flag=True, help="Open config", callback=open_config, expose_value=False, is_eager=True)
 @click.option("-install", "--plugin_install", help="Install plugins into plugins folder", callback=plugins_install,
               expose_value=False, is_eager=True, metavar='<PATH TO *.KALC FILE>', type=click.Path())
+@click.option("-user", is_flag=True, help="Open user folder", callback=open_user_folder, expose_value=False,
+              is_eager=True)
 @click.option('-path', '--config_path', 'config_path', help="Path to external sap_config.ini folder",
               type=click.Path(exists=True, dir_okay=True))
 @click.version_option(version=__version__)
@@ -101,7 +241,7 @@ def kalc(ctx, expression: str, userfriendly: bool, copytoclipboard: bool = False
     """
 
     output: str = ""
-    plug_func: dict = {}
+    plugin_functions: dict = {}
 
     cfg = Config(config_path)
     _config: KalcConfig = cfg.read()
@@ -132,44 +272,41 @@ def kalc(ctx, expression: str, userfriendly: bool, copytoclipboard: bool = False
     logging.basicConfig(level=lvl)  # pass loggin level to yapsy logger
     logging.getLogger('yapsy').setLevel(lvl)
 
-    manager = PluginManager()
-    manager = FilteredPluginManager(manager)
-    manager.isPluginOk = lambda x: x.description != ""  # Some day this may be helpfull, but not right now
-    manager.setPluginInfoExtension(PLUGIN_EXTENSION)
-    manager.setPluginPlaces([cfg.plugin_path, str(Path.cwd() / 'plugins')])
-    manager.setPluginPlaces([cfg.plugin_path, str(Path(__file__).resolve().parent / 'plugins')])
-    manager.collectPlugins()
-
-    rejected_plug = manager.getRejectedPlugins()
-    if rejected_plug:
-        logger.info(f"Rejected plugins: {rejected_plug}")
+    plugin_dirs = [cfg.plugin_path, str(Path(__file__).resolve().parent / 'plugins')]
+    plugin_functions = load_plugins(plugin_dirs, type='dict')
 
     # ------------------------------------------------------------------------------------
-    # Correct access to plugin module operators ( not func(), but plugin.plugin_object.func() ).
+    # Correct access to plugin module operators ( not func(), but <plugin_name>.plugin_object.func() ).
     # Replace only on word boundaries
     # ------------------------------------------------------------------------------------
-    for plugin in manager.getAllPlugins():
-        plug_func = {item: f"plugin.plugin_object.{item}" for item in dir(plugin.plugin_object) if
-                     not item.startswith("__") and not item.endswith("__") and 'activate' not in item}
-
-    if plug_func:
-        for key, value in plug_func.items():
-            expression = re.sub(rf"\b{key}\b", value, expression)
+    if plugin_functions:
+        for function2substitute, value in plugin_functions.items():
+            # Create new variable with plugin reference while eval()
+            locals()[f"{value.plugin_name}"] = value.plugin_class_reference
+            # Substitute
+            expression = re.sub(rf"\b{function2substitute}\b", value.string_function_reference, expression)
         logger.info(f"Plugins call normalization: {expression}")
 
-        # ------------------------------------------------------------------------------------
-        # Correct access to MATH module operators ( not sqrt(), but math.sqrt() ). Replace only on word boundaries
-        # ------------------------------------------------------------------------------------
-        math_func = {item: f"math.{item}" for item in dir(math)}
-        for key, value in math_func.items():
-            expression = re.sub(rf"\b{key}\b", value, expression)
-        logger.info(f"Math module call normalization: {expression}")
+    # ------------------------------------------------------------------------------------
+    # Correct access to MATH module operators ( not sqrt(), but math.sqrt() ). Replace only on word boundaries
+    # ------------------------------------------------------------------------------------
+    math_functions = {item: f"math.{item}" for item in dir(math) if
+                      not item.startswith("__") and not item.endswith("__")}
+    for function2substitute, value in math_functions.items():
+        expression = re.sub(rf"\b{function2substitute}\b", value, expression)
+    logger.info(f"Math module call normalization: {expression}")
 
     # ------------------------------------------------------------------------------------
     # Calculations
     # ------------------------------------------------------------------------------------
     # https://nedbatchelder.com/blog/201206/eval_really_is_dangerous.html
     # Use eval() instead of ast.literal_eval() if the input is trusted (which it is in your case).
+    # ------------------------------------------------------------------------------------
+    ### Possible use or ast module instead of ast.literal_eval which can fail with ValueError: malformed node or string
+    # import ast
+    # tree = ast.parse(expression, mode='eval')
+    # clause = compile(tree, '<AST>', 'eval')
+    # result = eval(clause)
     # ------------------------------------------------------------------------------------
     try:
         result: str = eval(expression)
@@ -218,7 +355,7 @@ def kalc(ctx, expression: str, userfriendly: bool, copytoclipboard: bool = False
     # ------------------------------------------------------------------------------------
     # Substitute answer after comparison operators: True/False instead 1/0
     # ------------------------------------------------------------------------------------
-    pattern = re.compile('\w(==|!=|>|<|>=|<=)\w')  # searching for comparison operators
+    pattern = re.compile('[\w\s]([=!]=|[<>]=?)[\w\s]')  # searching for comparison operators
     if re.search(pattern, expression):
         pattern = re.compile('^0(\.?)(0*)$')  # searching for 0, 0.0, 0.00, 0.000 etc result
         if re.search(pattern, result):

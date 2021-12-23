@@ -9,6 +9,7 @@ def runner():
     return CliRunner()
 
 
+# --------------------------------------- MATH OPERATIONS ---------------------------------------
 def test_kalc_2_plus_2(runner):
     result = runner.invoke(cli.kalc, "2+2")
     assert result.output == "4.00\n"
@@ -19,16 +20,12 @@ def test_kalc_2_multiply_2(runner):
     assert result.output == "4.00\n"
 
 
-def test_kalc_sqrt_121(runner):
-    result = runner.invoke(cli.kalc, "sqrt(121)")
-    assert result.output == "11.00\n"
-
-
 def test_kalc_55_minus_5_equal(runner):
     result = runner.invoke(cli.kalc, "55-5=")
     assert result.output == "55-5=50.00\n"
 
 
+# --------------------------------------- KALC'S OPTIONS ---------------------------------------
 def test_kalc_1mln_divide_3_userfriendly_true_output(runner):
     result = runner.invoke(cli.kalc, "1000000/3 -uf true")
     assert result.output == "333 333.33\n"
@@ -58,6 +55,12 @@ def test_kalc_clipboard(runner):
     runner.invoke(cli.kalc, "2*2 -c")
     clipboard_result = pyperclip.paste()
     assert clipboard_result == "4"
+
+
+# --------------------------------------- FUNCTIONS ---------------------------------------
+def test_kalc_sqrt_121(runner):
+    result = runner.invoke(cli.kalc, "sqrt(121)")
+    assert result.output == "11.00\n"
 
 
 def test_kalc_sin_pi_divide_2(runner):
@@ -100,6 +103,12 @@ def test_kalc_modulus_5_2(runner):
     assert result.output == "1.00\n"
 
 
+def test_kalc_factorial(runner):
+    result = runner.invoke(cli.kalc, "factorial(5)")
+    assert result.output == "120.00\n"
+
+
+# --------------------------------------- ERRORS ---------------------------------------
 def test_kalc_attributeError(runner):
     result = runner.invoke(cli.kalc, "sinc(pi/2)")
     assert result.output == "NameError: name 'sinc' is not defined"
@@ -110,8 +119,14 @@ def test_kalc_syntaxError(runner):
     assert result.output == "SyntaxError: 2:2. Check operators"
 
 
+# --------------------------------------- BOOL ---------------------------------------
 def test_kalc_bool_eq(runner):
     result = runner.invoke(cli.kalc, "5==5")
+    assert result.output == "True\n"
+
+
+def test_kalc_bool_eq_with_space(runner):
+    result = runner.invoke(cli.kalc, "'5 == 5'")
     assert result.output == "True\n"
 
 
@@ -120,8 +135,18 @@ def test_kalc_bool_not_eq(runner):
     assert result.output == "True\n"
 
 
+def test_kalc_bool_not_eq_with_space(runner):
+    result = runner.invoke(cli.kalc, "'5 != 4'")
+    assert result.output == "True\n"
+
+
 def test_kalc_bool_noq_more_eq(runner):
     result = runner.invoke(cli.kalc, "6>=5")
+    assert result.output == "True\n"
+
+
+def test_kalc_bool_noq_more_eq_with_space(runner):
+    result = runner.invoke(cli.kalc, "'6 >= 5'")
     assert result.output == "True\n"
 
 
@@ -135,16 +160,17 @@ def test_kalc_bool_eq_expression(runner):
     assert result.output == "True\n"
 
 
+def test_kalc_bool_eq_expression_with_spaces(runner):
+    result = runner.invoke(cli.kalc, "'2 + 2 == 2 * 2'")
+    assert result.output == "True\n"
+
+
 def test_kalc_bool_false_noq_more_eq(runner):
     result = runner.invoke(cli.kalc, "4>=5")
     assert result.output == "False\n"
 
 
-def test_kalc_factorial(runner):
-    result = runner.invoke(cli.kalc, "factorial(5)")
-    assert result.output == "120.00\n"
-
-
+# --------------------------------------- BITWISE ---------------------------------------
 def test_bitwise_right_shift(runner):
     result = runner.invoke(cli.kalc, "'10 << 1'")
     assert result.output == '20.00\n'
@@ -175,6 +201,7 @@ def test_bitwise_xor(runner):
     assert result.output == '11.00\n'
 
 
+# --------------------------------------- FLOAT FREE FORMAT ---------------------------------------
 def test_float_free_fromat_01(runner):
     result = runner.invoke(cli.kalc, "11.984,01*2 -ff")
     assert result.output == '23 968.02\n'
@@ -203,3 +230,24 @@ def test_float_free_fromat_05(runner):
 def test_float_free_format_06(runner):
     result = runner.invoke(cli.kalc, "'fsum([11.984,01, 11,984.01])' -ff")
     assert result.output == '23 968.02\n'
+
+
+def test_float_free_format_07(runner):
+    result = runner.invoke(cli.kalc, "1.000.000.000.000.000.000*2 -ff")
+    assert result.output == '2 000 000 000 000 000.00\n'
+
+
+# def test_float_free_format_07(runner):
+#     result = runner.invoke(cli.kalc, "1000000000000000000*2 -ff")
+#     assert result.output == '2 000 000 000 000 000.00\n'
+
+
+# --------------------------------------- CORE PLUGINS ---------------------------------------
+def test_core_plugin_root2(runner):
+    result = runner.invoke(cli.kalc, "root2**2")
+    assert result.output == '2.00\n'
+
+
+def test_core_plugin_percent(runner):
+    result = runner.invoke(cli.kalc, "percent(12,1000000,30,360)")
+    assert result.output == '10 000.00\n'

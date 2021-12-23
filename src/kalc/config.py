@@ -63,7 +63,8 @@ class Config:
             "free_format": False,
         }
 
-        os.mkdir(self.plugin_path)
+        if not os.path.exists(self.plugin_path):
+            os.mkdir(self.plugin_path)
 
         with open(self.config_path, "w+", encoding="utf-8") as configfile:
             parser.write(configfile)

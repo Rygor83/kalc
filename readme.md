@@ -17,7 +17,7 @@ Linux: tested on Windows 10 with WSL Ubuntu and Pycharm.
 2. Use the package manager [pip](https://pip.pypa.io/en/stable/) to install foobar.
 
 ```cmd
-pip install <path to kalc folder>
+>>> pip install <path to kalc folder>
 ```
 
 ## Usage
@@ -33,7 +33,7 @@ Options:
   -c,  --copytoclipboard          Copy results into clipboard
   -d,  --rounddecimal    INTEGER  Round a result up to <rounddecimal> decimal
   -ff, --free_format              Enter float numbers in any format (11.984,01; 11,984.01; 11984,01; 11984.01)
-  -function LIST / FUNCTION NAME  Available functions help
+  -f, --function LIST / FUNCTION NAME
   -config                         Open config file
   -install, --plugin_install <PATH TO *.KALC FILE> 
                                   Install plugins into plugins folder
@@ -75,16 +75,18 @@ Hints:
 - blanks in expressions are allowed only with quotes ( " " ):
 
 ```
-kalc "2 + 2 - 1"
-kalc "fsum([1, 2, 3])"
+>>> kalc "2 + 2 - 1"
+3.00
+>>> kalc "fsum([1, 2, 3])"
+6.00
 ```
 
 - by default decimal part must be separated by dot (not comma). But if you use option -ff then decimal part can be in
   any format (11.984,01; 11,984.01; 11984,01; 11984.01)
 
 ```
-kalc 11.984,01+11,984.01+11984,01+11984.01 -ff
->> 47 936.04
+>>> kalc 11.984,01+11,984.01+11984,01+11984.01 -ff
+47 936.04
 ```
 
 - expression must be written according to the common rules of writing math expression on a PC. For instance: x^2+sin(5*
@@ -92,40 +94,48 @@ kalc 11.984,01+11,984.01+11984,01+11984.01 -ff
 - kalc module considers parenthesis ( i.e. '(' and ')' )
 - kalc module knows the following operations:
 
-| Operations                                                                                          | Description                             | Examples                        |
-|:----------------------------------------------------------------------------------------------------|:----------------------------------------|:--------------------------------|
-| **Basic
-operations**                                                                                |                                         |                                 |
-| +                                                                                                   | addition                                | kalc 2+2 -> result 4            |
-| -                                                                                                   | substraction                            | kalc 2-1 -> result 3            |
-| /                                                                                                   | division                                | kalc 4/2 -> result 2            |
-| *                                                                                                   | multiplication                          | kalc 3*3 -> result 9            |
-| **                                                                                                  | exponentiation                          | kalc 3**2 -> result 9           |
-| //                                                                                                  | floor division                          | kalc 6//4 -> result 1           |
-| %                                                                                                   | modulus                                 | kalc 6%4 -> result 2            |
-| **
-Functions**                                                                                       |                                         |                                 |
-| sin                                                                                                 | sinus                                   | kalc sin(pi/2) -> result 1      |
-| cos                                                                                                 | cosine                                  | kalc cos(pi)   -> result -1     |
-| tan                                                                                                 | tangent                                 |                                 |
-| exp                                                                                                 | exponent                                | kalc exp(2) -> result 7.39      |
-| log                                                                                                 | natural logarithm                       | kalc log(e) -> result 1         |
-| sqrt                                                                                                | square root                             | kalc sqrt(121) -> result 121    |
-| trunc                                                                                               | truncation                              | kalc trunc(7.35) -> result 7    |
-| Other functions from python [math](https://docs.python.org/3/library/math.html) module is available |                                         |                                 |
-| **Numeric
-literals**                                                                                |                                         |                                 |
-| pi                                                                                                  | The mathematical constant π = 3.141592… |                                 |
-| e                                                                                                   | The mathematical constant e = 2.718281… |                                 |
-| tau                                                                                                 | The mathematical constant τ = 6.283185… |                                 |
-| **Comparison
-Operators** Works only with quotes. Answers: True, False                  |                                         |                                 |
-| ==                                                                                                  | equal                                   | "2==2" -> result 1.00 (True)    |
-| !=                                                                                                  | not equal                               | "2!=2" -> result 0.00 (False)   |
-| \>                                                                                                  | more                                    | "2>1" -> result 1.00 (True)     |
-| <                                                                                                   | less                                    | "2<2" -> result 0.00 (False)    |
-| > =                                                                                                 | more or equal                           | "2>=2" -> result 1.00 (True)    |
-| <=                                                                                                  | less or equal                           | "2<=2" -> result 1.00 (True)    |
+| Operations                                                                                                                                                                                                                                                                                                                            | Description                                                                                                                                    | Examples                     |
+|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------|:-----------------------------|
+| **[Basic operations](https://docs.python.org/3/reference/expressions.html#binary-arithmetic-operations)**                                                                                                                                                                                                                             |                                                                                                                                                |                              |
+| +                                                                                                                                                                                                                                                                                                                                     | addition                                                                                                                                       | kalc 2+2 -> result 4         |
+| -                                                                                                                                                                                                                                                                                                                                     | substraction                                                                                                                                   | kalc 2-1 -> result 3         |
+| /                                                                                                                                                                                                                                                                                                                                     | division                                                                                                                                       | kalc 4/2 -> result 2         |
+| *                                                                                                                                                                                                                                                                                                                                     | multiplication                                                                                                                                 | kalc 3*3 -> result 9         |
+| **                                                                                                                                                                                                                                                                                                                                    | exponentiation                                                                                                                                 | kalc 3**2 -> result 9        |
+| //                                                                                                                                                                                                                                                                                                                                    | floor division                                                                                                                                 | kalc 6//4 -> result 1        |
+| %                                                                                                                                                                                                                                                                                                                                     | modulus                                                                                                                                        | kalc 6%4 -> result 2         |
+| **Functions**                                                                                                                                                                                                                                                                                                                           |                                                                                                                                                |                              |
+| sin                                                                                                                                                                                                                                                                                                                                   | sinus                                                                                                                                          | kalc sin(pi/2) -> result 1   |
+| cos                                                                                                                                                                                                                                                                                                                                   | cosine                                                                                                                                         | kalc cos(pi)   -> result -1  |
+| tan                                                                                                                                                                                                                                                                                                                                   | tangent                                                                                                                                        |                              |
+| exp                                                                                                                                                                                                                                                                                                                                   | exponent                                                                                                                                       | kalc exp(2) -> result 7.39   |
+| log                                                                                                                                                                                                                                                                                                                                   | natural logarithm                                                                                                                              | kalc log(e) -> result 1      |
+| sqrt                                                                                                                                                                                                                                                                                                                                  | square root                                                                                                                                    | kalc sqrt(121) -> result 121 |
+| trunc                                                                                                                                                                                                                                                                                                                                 | truncation                                                                                                                                     | kalc trunc(7.35) -> result 7 |
+| Other functions from python [math](https://docs.python.org/3/library/math.html) module is available                                                                                                                                                                                                                                   |                                                                                                                                                |                              |
+| **Numericc literals**                                                                                                                                                                                                                                                                                                                 |                                                                                                                                                |                              |
+| pi                                                                                                                                                                                                                                                                                                                                    | The mathematical constant π = 3.141592…                                                                                                        |                              |
+| e                                                                                                                                                                                                                                                                                                                                     | The mathematical constant e = 2.718281…                                                                                                        |                              |
+| tau                                                                                                                                                                                                                                                                                                                                   | The mathematical constant τ = 6.283185…                                                                                                        |                              |
+| **[Comparison operators](https://docs.python.org/3/reference/expressions.html#value-comparisons)** Works only with quotes. Answers: True, False                                                                                                                                                                                       |                                                                                                                                                |                              |
+| ==                                                                                                                                                                                                                                                                                                                                    | equal                                                                                                                                          | "2==2" -> result True        |
+| !=                                                                                                                                                                                                                                                                                                                                    | not equal                                                                                                                                      | "2!=2" -> result False       |
+| \>                                                                                                                                                                                                                                                                                                                                    | more                                                                                                                                           | "2>1" -> result True         |
+| <                                                                                                                                                                                                                                                                                                                                     | less                                                                                                                                           | "2<2" -> result False        |
+| > =                                                                                                                                                                                                                                                                                                                                   | more or equal                                                                                                                                  | "2>=2" -> result True        |
+| <=                                                                                                                                                                                                                                                                                                                                    | less or equal                                                                                                                                  | "2<=2" -> result True        |
+| **[Shifting](https://docs.python.org/3/reference/expressions.html#shifting-operations) [Unary](https://docs.python.org/3/reference/expressions.html#unary-arithmetic-and-bitwise-operations) and [binary](https://docs.python.org/3/reference/expressions.html#binary-bitwise-operations) bitwise operators** Works only with quotes. |                                                                                                                                                |                              |
+| <<                                                                                                                                                                                                                                                                                                                                    | left shift                                                                                                                                     | "10 << 1" -> 20              |
+| \>>                                                                                                                                                                                                                                                                                                                                   | right shift                                                                                                                                    | "10 >> 1" -> 5               |
+| &#124;                                                                                                                                                                                                                                                                                                                                | or                                                                                                                                             | "10 &#124; 1" -> 11          |
+| &                                                                                                                                                                                                                                                                                                                                     | and                                                                                                                                            | "10 & 1" -> 0.00             | 
+| ^                                                                                                                                                                                                                                                                                                                                     | xor                                                                                                                                            | "10 ^ 1" -> 11.00            |
+| ~                                                                                                                                                                                                                                                                                                                                     | invert                                                                                                                                         | "~10" -> 11.00               |
+| **[Boolean operations](https://docs.python.org/3/reference/expressions.html#boolean-operations)** Works only with quotes.                                                                                                                                                                                                             |                                                                                                                                                |                              |
+| and                                                                                                                                                                                                                                                                                                                                   | The expression x and y first evaluates x; if x is false, its value is returned; otherwise, y is evaluated and the resulting value is returned. | "1 and 0" -> 0.00            |
+| or                                                                                                                                                                                                                                                                                                                                    | The expression x or y first evaluates x; if x is true, its value is returned; otherwise, y is evaluated and the resulting value is returned.   | "1 or 0" -> 1.00             |
+| not                                                                                                                                                                                                                                                                                                                                   | The operator not yields True if its argument is false, False otherwise.                                                                        | "not 1" -> 0.00              |
+|                                                                                                                                                                                                                                                                                                                                       |                                                                                                                                                | "not 0" -> 1.00              |
 
 ## Configuration
 
@@ -136,10 +146,10 @@ The kalc's default settings are stored in kalc_config.ini:
 
 kalc's configuration file is created at the moment of first calculations.
 
-To open config file for editing purpose run:
+To open conf file for editing purpose run:
 
 ```
-kalc -config
+>>> kalc -conf
 ```
 
 Config parameters
@@ -150,7 +160,7 @@ decimalround     - Round a result up to <decimalround> decimal. Values: integer.
 copytoclipboard  - Need to copy results into clipboard. Values: True/False
 userfriendly     - Need to separate thousands with a space. Values: True/False. Example: 1 000 000
 free_format      - Can use free format of float ((11.984,01; 11,984.01; 11984,01; 11984.01)). Values: True/False
-                   **Side effects**: if you use free_format parameter from config file then use functions with multiple 
+                   **Side effects**: if you use free_format parameter from conf file then use functions with multiple 
                    values carefully. For example FSUM([1,2,3,4,5,6,7,8,9,10]) will convert values 1,2,3,4,5,6,7,8,9,10
                    into 123456789.10. You have to delimite values with space and use quotes: 
                    "FSUM([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])"  
@@ -159,43 +169,51 @@ free_format      - Can use free format of float ((11.984,01; 11,984.01; 11984,01
 Kalc's command options (-uf, -d, -c, -ff) have priority over configuration parameters.
 
 If is possible open user folder with the followin command
+
 ```
-kalc -user
+>>> kalc -user
 ```
 
-## Help on available functions
+## Help on available functions and constants
 
 Options:
-  -function LIST / FUNCTION NAME  Available functions help
+-f, --function LIST / FUNCTION NAME Available functions help
 
-It is possible to take a look at available functions. Both for math module and for available plugins
+It is possible to take a look at available functions and constants. Both for math module and for available plugins
+
 ```
-kalc -function list
->>> List of available functions
->>> 1. Plugins:
->>> ['percent', 'root2']
->>> 2. Math module:
->>> ['acos', 'acosh', 'asin', 'asinh', 'atan', 'atan2', 'atanh', 'ceil', 'comb', 'copysign', 'cos', 'cosh', 'degrees', 'dist', 'e', 'erf', 'erfc', 'exp', 'expm1', 'fabs', 'factorial', 'floor', 'fmod', 'frexp', 'fsum', 'gamma', 'gcd', 'hypot', 'inf', 'isclose', 'isfinite', 'isinf', 'isnan', 'isqrt', 'lcm', 'ldexp', 'lgamma', 'log', 'log10', 'log1p', 'log2', 'modf', 'nan', 'nextafter', 'perm', 'pi', 'pow', 'prod', 'radians', 'remainder', 'sin', 'sinh', 'sqrt', 'tan', 'tanh', 'tau', 'trunc', 'ulp']
+>>> kalc -f list
+List of available functions
+1. Plugins:
+Functions: compound_interest, sinterest
+Constants: root2
+2. Math module:
+Functions: acos, acosh, asin, asinh, atan, atan2, atanh, ceil, comb, copysign, cos, cosh, degrees, dist, erf, erfc, exp, expm1, fabs, factorial, floor, fmod, frexp, fsum, gamma, gcd, hypot, isclose, isfinite, isinf, isnan, isqrt, lcm, ldexp, lgamma, log, log10, log1p, log2, modf, nextafter, perm, pow, prod, radians, remainder, sin, sinh, sqrt, tan, tanh, trunc, ulp
+Constants: e, inf, nan, pi, tau
 ```
 
 If you need help on any of available function:
+
 ```
-kalc -function sqrt
->>> Return the square root of x.
+>>> kalc -f sqrt
+Return the square root of x.
 ```
 
 ```
-kalc -function percent
->>> Returns maturity amount
->>> 
->>> :param percent: Rate of interest, 12
->>>  :param base_amount: Principal amount
->>>  :param days_in_month: Days in period
->>>  :param days_in_year: Days in year
->>>  :return: Maturity amount
+>>> kalc -f pi
+pi = 3.141592653589793
 ```
 
-Help on constant is not available due to lack of doc string for constants.
+```
+>>> kalc -f percent
+Simple interest is a method to calculate the amount of interest charged on a principal amount at a given rate of interest and for a given period of time
+
+:param percent: Rate of interest, for example 12
+:param base_amount: Principal amount, for example 1000000
+:param days_in_month: Days in given period of time, for example: 1 month = 30 days
+:param days_in_year: Days in year, for example, 360/365/366
+:return: Maturity amount
+```
 
 
 ## Plugins
@@ -255,20 +273,19 @@ class PluginOne(IPlugin):           # define class that will contain functions (
 Then we need to install plugins into plugin directory - run the following command
 
 ```
-kalc -install <path to myplugin.kalc file>
->>> Plugin "MYPLUGIN.KALC" is installed into "c:\Users\USERNAME\AppData\Local\kalc\plugins" folder - for windows
->>> Plugin "MYPLUGIN.KALC" is installed into "/home/USERNAME/.local/share/kalc" folder - for Linux
+>>> kalc -install <path to myplugin.kalc file>
+Plugin "MYPLUGIN.KALC" is installed into "c:\Users\USERNAME\AppData\Local\kalc\plugins" folder - for windows
+Plugin "MYPLUGIN.KALC" is installed into "/home/USERNAME/.local/share/kalc" folder - for Linux
 ```
 
 Now you can use new functions and constants from plugin:
 
 ```
-kalc root2*5
->>> 7.07
+>>> kalc root2*5
+7.07
 
-kalc percent(12,100000,30,360)
->>> 1 000.00
-
+>>> kalc percent(12,100000,30,360)
+1 000.00
 ```
 
 In source code of kalc module (kalc\src\kalc\plugins) there will be some examples of plugins files

@@ -21,6 +21,9 @@ from kalc.config import Config, KalcConfig
 from kalc import __version__, PLUGIN_EXTENSION
 from pprint import pformat
 from collections import namedtuple
+import ast, operator
+import types
+import builtins
 
 # Message color
 color_message = {'bg': 'black', 'fg': 'white'}
@@ -31,6 +34,98 @@ color_sensitive = {'bg': 'red', 'fg': 'white'}
 Plugin_ref = namedtuple('Plugin', ['plugin_function_reference', 'string_function_reference', 'plugin_name',
                                    'plugin_class_reference'])
 Plugin_ref.__new__.__defaults__ = (None, None, None, None)
+
+
+def _safe_eval(node, variables, functions):
+    """
+    https://pretagteam.com/question/evaluate-math-equations-from-unsafe-user-input-in-python
+
+    :param node:
+    :param variables:
+    :param functions:
+    :return:
+    """
+    _operations = {
+        # Math
+        ast.Add: operator.add,
+        ast.Sub: operator.sub,
+        ast.Mult: operator.mul,
+        ast.Div: operator.truediv,
+        ast.Pow: operator.pow,
+        ast.FloorDiv: operator.floordiv,
+        ast.Mod: operator.mod,
+        # Compare
+        ast.Eq: operator.eq,
+        ast.NotEq: operator.ne,
+        ast.GtE: operator.ge,
+        ast.Gt: operator.gt,
+        ast.LtE: operator.le,
+        ast.Lt: operator.lt,
+        # Bool
+        ast.And: operator.and_,
+        ast.Or: operator.or_,
+        # Structures
+        ast.List: list,
+        ast.Dict: dict,
+        ast.Set: set,
+        # Bitwise
+        ast.BitOr: operator.or_,
+        ast.BitAnd: operator.and_,
+        ast.BitXor: operator.xor,
+        ast.LShift: operator.lshift,
+        ast.RShift: operator.rshift,
+        # Unary
+        ast.Invert: operator.invert,
+        ast.Not: operator.not_,
+        ast.USub: operator.neg,
+        ast.UAdd: operator.pos,
+    }
+
+    if isinstance(node, ast.Num):
+        return node.n
+    elif isinstance(node, ast.Name):
+        return variables[node.id]  # KeyError -> Unsafe variable
+    elif isinstance(node, ast.BinOp):
+        op = _operations[node.op.__class__]  # KeyError -> Unsafe operation
+        left = _safe_eval(node.left, variables, functions)
+        right = _safe_eval(node.right, variables, functions)
+        if isinstance(node.op, ast.Pow):
+            assert right < 10000, f"Power must be less then 100. You use {right}"
+        return op(left, right)
+    elif isinstance(node, ast.Compare):
+        op = _operations[node.ops[0].__class__]  # KeyError -> Unsafe operation
+        left = _safe_eval(node.left, variables, functions)
+        right = _safe_eval(node.comparators[0], variables, functions)
+        return op(left, right)
+    elif isinstance(node, ast.BoolOp):
+        op = _operations[node.op.__class__]  # KeyError -> Unsafe operation
+        left = _safe_eval(node.values[0], variables, functions)
+        right = _safe_eval(node.values[1], variables, functions)
+        return op(left, right)
+    elif isinstance(node, ast.UnaryOp):
+        op = _operations[node.op.__class__]  # KeyError -> Unsafe operation
+        left = _safe_eval(node.operand, variables, functions)
+        return op(left)
+    elif isinstance(node, ast.List):
+        op = _operations[node.__class__]  # KeyError -> Unsafe operation
+        left = [arg.value for arg in node.elts]
+        return op(left)
+    elif isinstance(node, ast.Call):
+        assert not node.keywords
+        assert isinstance(node.func, ast.Name), f"Unsafe function derivation '{node.func.attr}'"
+        func = functions[node.func.id]  # KeyError -> Unsafe function
+        args = [_safe_eval(arg, variables, functions) for arg in node.args]
+        return func(*args)
+
+    assert False, 'Unsafe operation'
+
+
+def safe_eval(expr, variables={}, functions={}):
+    node = ast.parse(expr, '<string>', 'eval').body
+
+    logger.info(ast.dump(node))
+
+    return _safe_eval(node, variables, functions)
 
 
 def python_float_formater(val: str) -> str:
@@ -55,12 +150,35 @@ def python_float_formater(val: str) -> str:
     #   2 000 000 000 000 000.00
     #   @Rygor ❯ kalc 1,000,000,000,000,000,000*2 -ff
     #   2 000 000 000 000 000.00
+
+    # 1000000.00 - yes, 1 dot
+    # 1000000,00 - yes, 1 comma
+    # 1.000.000,00 - yes, several dots and 1 comma
+    # 1,000,000.00 - yes, 1 dot and several commas
+    #
+    # 1000000 - no, no dot and no comma
+    # 1.000.000 - no, several dots
+    # 1,000,000 - no, several commas
+    #
+    # 1.000 - don't know
+    # 1,000 - don't know
+
     value = re.split(r"\.|,", val.strip())
     if len(value) > 1:
         newVal = str("".join(value[:-1]) + "." + value[-1])
     else:
         newVal = str("".join(value))
     return newVal
+
+
+def load_python_modules():
+    math_functions = {item: getattr(math, f"{item}") for item in dir(math) if
+                      not item.startswith("__") and not item.endswith("__") and type(
+                          getattr(math, f"{item}")) == types.BuiltinFunctionType}
+    math_constants = {item: getattr(math, f"{item}") for item in dir(math) if
+                      not item.startswith("__") and not item.endswith("__") and type(
+                          getattr(math, f"{item}")) == float}
+    return math_functions, math_constants
 
 
 def function_help(ctx, param, value):
@@ -70,23 +188,31 @@ def function_help(ctx, param, value):
 
     cfg = Config()
     plugin_dirs = [str(Path(__file__).resolve().parent / 'plugins'), cfg.plugin_path]
-    plug_func = load_plugins(plugin_dirs, type='dict')
+    plug_func, plug_const = load_plugins(plugin_dirs)
 
-    math_func = {item: f"math.{item}" for item in dir(math) if not item.startswith("__") and not item.endswith("__")}
+    # math_func = {item: f"math.{item}" for item in dir(math) if not item.startswith("__") and not item.endswith("__")}
+
+    math_func, math_cons = load_python_modules()
 
     if str(value).lower() == 'list':
         click.echo(click.style('\nList of available functions', **color_success))
         click.echo(click.style('1. Plugins:', **color_success))
-        click.echo(list(plug_func.keys()))
+        click.echo(f"{click.style('Functions:', **color_warning)} {', '.join(list(plug_func.keys()))}")
+        click.echo(f"{click.style('Constants', **color_warning)}: {', '.join(list(plug_const.keys()))}")
         click.echo(click.style('2. Math module:', **color_success))
-        click.echo(list(math_func.keys()))
+        click.echo(f"{click.style('Functions', **color_warning)}: {', '.join(list(math_func.keys()))}")
+        click.echo(f"{click.style('Constants', **color_warning)}: {', '.join(list(math_cons.keys()))}")
     elif value in plug_func:
-        function_description = getattr(plug_func[value][0], '__doc__')
+        function_description = getattr(plug_func[value], '__doc__')
         click.echo(function_description)
+    elif value in plug_const:
+        click.echo(f"{value} = {plug_const[value]}")
     elif value in math_func:
-        math_function_reference = getattr(math, value)
-        function_description = getattr(math_function_reference, '__doc__')
+        function_description = getattr(getattr(math, value), '__doc__')
         click.echo(function_description)
+    elif value in math_cons:
+        function_description = getattr(math, value)
+        click.echo(f"{value} = {function_description}")
     else:
         click.echo(f"Function {str(value).upper()} is not available")
 
@@ -111,7 +237,7 @@ def open_user_folder(ctx, param, value):
     ctx.exit()
 
 
-def load_plugins(plugins_dirs: list, type: str):
+def load_plugins(plugins_dirs: list):
     manager = PluginManager()
     pluglocator = PluginFileLocator()
     pluglocator.setPluginPlaces(plugins_dirs)
@@ -120,24 +246,18 @@ def load_plugins(plugins_dirs: list, type: str):
     manager.setPluginLocator(pluglocator)
     manager.collectPlugins()
 
-    plugin_functions_as_dict = {}
-    plugin_functions_as_list = []
+    plugin_functions = {}
+    plugin_constants = {}
 
     for plugin in manager.getAllPlugins():
         for item in dir(plugin.plugin_object):
             if not item.startswith("__") and not item.endswith("__") and 'activate' not in item:
-                if type == 'dict':
-                    plugin_function_reference = getattr(plugin.plugin_object, item)
-                    var_name = plugin.name.replace(" ", "_")
-                    plugin_functions_as_dict[item] = Plugin_ref(plugin_function_reference,
-                                                                f"{var_name}.plugin_object.{item}",
-                                                                var_name, plugin)
-                elif type == 'list':
-                    plugin_functions_as_list.append(item)
-                else:
-                    pass
-    plugin_functions = plugin_functions_as_dict if plugin_functions_as_dict else plugin_functions_as_list
-    return plugin_functions
+                if isinstance(getattr(plugin.plugin_object, item), types.MethodType):
+                    plugin_functions[item] = getattr(plugin.plugin_object, item)
+                elif not isinstance(getattr(plugin.plugin_object, item), types.MethodType):
+                    plugin_constants[item] = getattr(plugin.plugin_object, item)
+
+    return plugin_functions, plugin_constants
 
 
 def plugins_install(ctx, param, value):
@@ -147,35 +267,40 @@ def plugins_install(ctx, param, value):
         return
 
     existing_plugin_functions = {}
-    cfg = Config()
-
-    # Name conflict check
+    existing_plugin_constants = {}
+    math_functions = {}
+    math_constants = {}
     captured_names_confilct = []
 
+    cfg = Config()
+
     plugin_dirs = [cfg.plugin_path, str(Path(__file__).resolve().parent / 'plugins')]
-    existing_plugin_functions = load_plugins(plugin_dirs, type='dict')  # Load existing plugins
+    existing_plugin_functions, existing_plugin_constants = load_plugins(plugin_dirs)  # Load existing plugins
 
-    logger.info(f"\nEXISING PLUGIN FUNCTIONS:")
-    logger.info(pformat(existing_plugin_functions))
+    logger.info(f"\nEXISING PLUGIN FUNCTIONS AND CONSTANTS:")
+    logger.info(list(existing_plugin_functions.keys()))
+    logger.info(list(existing_plugin_constants.keys()))
 
-    math_functions = [item for item in dir(math) if not item.startswith("__") and not item.endswith("__")]
-    logger.info(f"\nMATH MODULE FUNCTIONS:")
-    logger.info(pformat(math_functions))
+    math_functions, math_constants = load_python_modules()
+    logger.info(f"\nMATH MODULE FUNCTIONS AND CONSTANTS:")
+    logger.info(list(math_functions.keys()))
+    logger.info(list(math_constants.keys()))
 
     new_plugin_dir = [str(Path(value).resolve().parent)]
-    new_plug_func = load_plugins(new_plugin_dir, type='list')  # Load new plugins
+    new_plug_func, new_plug_const = load_plugins(new_plugin_dir)  # Load new plugins
 
     logger.info(f"\nNEW PLUGIN FUNCTIONS:")
-    logger.info(pformat(new_plug_func))
+    logger.info(list(new_plug_func.keys()))
+    logger.info(list(new_plug_const.keys()))
 
     for new_item in new_plug_func:
         if new_item in existing_plugin_functions.keys():
+            # TODO: указать про какой модуль разговор
             captured_names_confilct.append(
-                (new_item, existing_plugin_functions[new_item].plugin_name,
-                 existing_plugin_functions[new_item].plugin_class_reference.path))
+                (new_item, "", ""))
 
     for new_item in new_plug_func:
-        if new_item in math_functions:
+        if new_item in math_functions.keys():
             captured_names_confilct.append((new_item, 'MATH', ''))
 
     if captured_names_confilct:
@@ -194,9 +319,9 @@ def plugins_install(ctx, param, value):
         folder, file = os.path.split(value)
         result = autoinstall.install(directory=folder, plugin_info_filename=file)
         if result:
-            print(f'Plugin is installed into "{cfg.plugin_path}" folder.')
+            click.echo(f'Plugin is installed into "{cfg.plugin_path}" folder.')
         else:
-            print(f'Failed to install "{file.upper()}".')
+            click.echo(f'Failed to install "{file.upper()}".')
 
     ctx.exit()
 
@@ -219,7 +344,7 @@ log_level = ['--log_level', '-l']
 @click.option("-ff", "--free_format", "free_format",
               help="Enter float numbers in any format (11.984,01; 11,984.01; 11984,01; 11984.01)", is_flag=True,
               default=False)
-@click.option("-function", help="Available functions help", callback=function_help, expose_value=False,
+@click.option("-f", "--function", help="Available functions help", callback=function_help, expose_value=False,
               is_eager=True, metavar="LIST / FUNCTION NAME")
 @click.option("-config", is_flag=True, help="Open config", callback=open_config, expose_value=False, is_eager=True)
 @click.option("-install", "--plugin_install", help="Install plugins into plugins folder", callback=plugins_install,
@@ -273,51 +398,44 @@ def kalc(ctx, expression: str, userfriendly: bool, copytoclipboard: bool = False
     logging.getLogger('yapsy').setLevel(lvl)
 
     plugin_dirs = [cfg.plugin_path, str(Path(__file__).resolve().parent / 'plugins')]
-    plugin_functions = load_plugins(plugin_dirs, type='dict')
-
-    # ------------------------------------------------------------------------------------
-    # Correct access to plugin module operators ( not func(), but <plugin_name>.plugin_object.func() ).
-    # Replace only on word boundaries
-    # ------------------------------------------------------------------------------------
-    if plugin_functions:
-        for function2substitute, value in plugin_functions.items():
-            # Create new variable with plugin reference while eval()
-            locals()[f"{value.plugin_name}"] = value.plugin_class_reference
-            # Substitute
-            expression = re.sub(rf"\b{function2substitute}\b", value.string_function_reference, expression)
-        logger.info(f"Plugins call normalization: {expression}")
+    plugin_functions, plugin_constants = load_plugins(plugin_dirs)
 
     # ------------------------------------------------------------------------------------
     # Correct access to MATH module operators ( not sqrt(), but math.sqrt() ). Replace only on word boundaries
     # ------------------------------------------------------------------------------------
-    math_functions = {item: f"math.{item}" for item in dir(math) if
-                      not item.startswith("__") and not item.endswith("__")}
-    for function2substitute, value in math_functions.items():
-        expression = re.sub(rf"\b{function2substitute}\b", value, expression)
-    logger.info(f"Math module call normalization: {expression}")
+    math_functions, math_constants = load_python_modules()
+
+    # ------------------------------------------------------------------------------------
+
+    allowed_functions = {**math_functions, **plugin_functions}
+    allowed_constants = {**math_constants, **plugin_constants}
 
     # ------------------------------------------------------------------------------------
     # Calculations
     # ------------------------------------------------------------------------------------
-    # https://nedbatchelder.com/blog/201206/eval_really_is_dangerous.html
-    # Use eval() instead of ast.literal_eval() if the input is trusted (which it is in your case).
-    # ------------------------------------------------------------------------------------
-    ### Possible use or ast module instead of ast.literal_eval which can fail with ValueError: malformed node or string
-    # import ast
-    # tree = ast.parse(expression, mode='eval')
-    # clause = compile(tree, '<AST>', 'eval')
-    # result = eval(clause)
-    # ------------------------------------------------------------------------------------
+
     try:
-        result: str = eval(expression)
+        result = safe_eval(expression, allowed_constants, allowed_functions)
     except AttributeError as err:
-        click.echo(f"AttributeError: {err}", nl=False)
+        logger.error(err)
         raise SystemExit from err
     except SyntaxError as err:
-        click.echo(f"SyntaxError: {err.args[1][3]}. Check operators", nl=False)
+        logger.error(f"SyntaxError: {err.args[1][3]}. Check the operators used")
         raise SystemExit from err
     except NameError as err:
-        click.echo(f"NameError: {err.args[0]}", nl=False)
+        logger.error(err)
+        raise SystemExit from err
+    except TypeError as err:
+        logger.error(err)
+        raise SystemExit from err
+    except ZeroDivisionError as err:
+        logger.error(err)
+        raise SystemExit from err
+    except AssertionError as err:
+        logger.error(err)
+        raise SystemExit from err
+    except KeyError as err:
+        logger.error(f"KeyError. Function {err} is not permited. Run 'kalc -function list' for permited functions")
         raise SystemExit from err
 
     # ------------------------------------------------------------------------------------
@@ -347,9 +465,11 @@ def kalc(ctx, expression: str, userfriendly: bool, copytoclipboard: bool = False
         replace_symbol = ""
 
     try:
-        result = f"{{:,.{round_num}f}}".format(result).replace(",", replace_symbol)
+        if type(result) == int:
+            round_num = 0
+        result = f"{result:,.{round_num}f}".replace(",", replace_symbol)
     except OverflowError as err:
-        click.echo(f"NameError: {err.args[0]}", nl=False)
+        logger.error(f"NameError: {err.args[0]}")
         raise SystemExit from err
 
     # ------------------------------------------------------------------------------------
